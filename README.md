@@ -19,7 +19,9 @@ A desktop application for capturing voice notes and transforming them with AI. B
 - [OpenAI API Key](https://platform.openai.com/api-keys)
 
 ## Installation
-
+- Start exe in src-tauri\target\release
+- Use setup in src-tauri\target\release\bundle\nsis
+  
 ```bash
 cd voice-note-ai
 npm install
@@ -41,3 +43,4 @@ npm run tauri:dev    # Desktop app
 - **State**: Zustand
 - **Desktop**: Tauri (Rust)
 - **AI**: OpenAI API (Whisper, GPT-4o-mini)
+

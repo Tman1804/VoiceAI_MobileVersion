@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Copy, Download, Check, FileText, Sparkles, RefreshCw } from 'lucide-react';
+import { Copy, Download, Check, FileText, Sparkles, RefreshCw, Share2 } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import { enrichTranscript, getEnrichmentModeLabel } from '@/lib/enrichmentService';
 
@@ -16,6 +16,23 @@ export function ResultsDisplay() {
       setCopiedField(field);
       setTimeout(() => setCopiedField(null), 2000);
     } catch (error) { console.error('Failed to copy:', error); }
+  };
+
+  const handleShare = async (text: string) => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Voice Note AI',
+          text: text,
+        });
+      } else {
+        await handleCopy(text, activeTab);
+      }
+    } catch (error) {
+      if ((error as Error).name !== 'AbortError') {
+        console.error('Failed to share:', error);
+      }
+    }
   };
 
   const handleExport = async (text: string, filename: string) => {
@@ -61,10 +78,13 @@ export function ResultsDisplay() {
                 )}
               </div>
               <div className="flex items-center gap-2">
-                <button onClick={() => handleCopy(displayContent, activeTab)} className="flex items-center gap-2 px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors">
+                <button onClick={() => handleShare(displayContent)} className="flex items-center gap-2 px-3 py-1.5 text-sm bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors touch-target">
+                  <Share2 className="w-4 h-4" />Share
+                </button>
+                <button onClick={() => handleCopy(displayContent, activeTab)} className="flex items-center gap-2 px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors touch-target">
                   {copiedField === activeTab ? (<><Check className="w-4 h-4 text-green-400" />Copied!</>) : (<><Copy className="w-4 h-4" />Copy</>)}
                 </button>
-                <button onClick={() => handleExport(displayContent, `voice-note-${activeTab}.txt`)} className="flex items-center gap-2 px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors">
+                <button onClick={() => handleExport(displayContent, `voice-note-${activeTab}.txt`)} className="flex items-center gap-2 px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors touch-target">
                   <Download className="w-4 h-4" />Export
                 </button>
               </div>

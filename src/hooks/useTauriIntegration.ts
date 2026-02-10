@@ -1,19 +1,45 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { useAppStore } from '@/store/appStore';
+
+// Platform detection
+export function usePlatform() {
+  const [platform, setPlatform] = useState<'desktop' | 'ios' | 'android' | 'web'>('web');
+  const [isTauri, setIsTauri] = useState(false);
+
+  useEffect(() => {
+    const checkPlatform = async () => {
+      if (typeof window !== 'undefined' && '__TAURI__' in window) {
+        setIsTauri(true);
+        try {
+          const { platform: osPlatform } = await import('@tauri-apps/plugin-os');
+          const os = await osPlatform();
+          if (os === 'ios') setPlatform('ios');
+          else if (os === 'android') setPlatform('android');
+          else setPlatform('desktop');
+        } catch {
+          setPlatform('desktop');
+        }
+      }
+    };
+    checkPlatform();
+  }, []);
+
+  return { platform, isTauri, isMobile: platform === 'ios' || platform === 'android' };
+}
 
 export function useTauriIntegration() {
   const { isRecording } = useAppStore();
+  const { platform, isTauri, isMobile } = usePlatform();
 
   const toggleRecording = useCallback(() => {
     window.dispatchEvent(new CustomEvent('toggle-recording'));
   }, []);
 
   useEffect(() => {
-    const isTauri = typeof window !== 'undefined' && '__TAURI__' in window;
-    
-    if (!isTauri) {
+    // Keyboard shortcut for web/desktop only
+    if (!isTauri || isMobile) {
       const handleKeyDown = (e: KeyboardEvent) => {
         if (e.ctrlKey && e.shiftKey && e.key === 'R') { e.preventDefault(); toggleRecording(); }
       };
@@ -21,17 +47,24 @@ export function useTauriIntegration() {
       return () => window.removeEventListener('keydown', handleKeyDown);
     }
 
-    const setupTauri = async () => {
-      try {
-        const { register, unregisterAll } = await import('@tauri-apps/api/globalShortcut');
-        const { listen } = await import('@tauri-apps/api/event');
-        await unregisterAll();
-        await register('CommandOrControl+Shift+R', () => toggleRecording());
-        const unlisten = await listen('start-recording', () => { if (!isRecording) toggleRecording(); });
-        return () => { unlisten(); unregisterAll(); };
-      } catch (error) { console.error('Failed to setup Tauri integration:', error); }
-    };
-    const cleanup = setupTauri();
-    return () => { cleanup.then((fn) => fn?.()); };
-  }, [toggleRecording, isRecording]);
+    // Desktop Tauri with global shortcuts
+    if (isTauri && platform === 'desktop') {
+      const setupGlobalShortcut = async () => {
+        try {
+          const { register, unregisterAll } = await import('@tauri-apps/plugin-global-shortcut');
+          await unregisterAll();
+          await register('CommandOrControl+Shift+R', (event) => {
+            if (event.state === 'Pressed') toggleRecording();
+          });
+          return () => { unregisterAll(); };
+        } catch (error) { 
+          console.error('Failed to setup global shortcuts:', error); 
+        }
+      };
+      const cleanup = setupGlobalShortcut();
+      return () => { cleanup.then((fn) => fn?.()); };
+    }
+  }, [toggleRecording, isRecording, isTauri, platform, isMobile]);
+
+  return { platform, isTauri, isMobile };
 }

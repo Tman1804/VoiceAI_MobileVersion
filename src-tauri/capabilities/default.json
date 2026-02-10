@@ -1,0 +1,26 @@
+{
+  "identifier": "default",
+  "description": "Default permissions for Voice Note AI",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "core:window:default",
+    "core:window:allow-show",
+    "core:window:allow-hide",
+    "core:window:allow-set-focus",
+    "clipboard-manager:default",
+    "clipboard-manager:allow-write-text",
+    "clipboard-manager:allow-read-text",
+    "notification:default",
+    "notification:allow-notify",
+    "dialog:default",
+    "dialog:allow-open",
+    "dialog:allow-save",
+    "dialog:allow-message",
+    "fs:default",
+    "fs:allow-read",
+    "fs:allow-write",
+    "shell:default",
+    "shell:allow-open"
+  ]
+}

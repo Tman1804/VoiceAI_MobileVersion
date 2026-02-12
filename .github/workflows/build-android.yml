@@ -33,7 +33,7 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+          targets: aarch64-linux-android
 
       - name: Setup Android NDK
         uses: nttld/setup-ndk@v1
@@ -47,6 +47,9 @@ jobs:
 
       - name: Install Tauri CLI
         run: npm install -g @tauri-apps/cli@^2.0.0
+
+      - name: Clean previous Android builds
+        run: rm -rf src-tauri/gen/android
 
       - name: Initialize Android project
         run: npm run tauri android init
@@ -63,19 +66,21 @@ jobs:
           cat "$MANIFEST_PATH"
 
       - name: Build Android APK (Debug)
-        run: npm run tauri android build -- --apk --debug
+        run: npm run tauri android build -- --apk --debug --target aarch64
         env:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
 
-      - name: List generated APKs
-        run: find src-tauri/gen/android -name "*.apk" -type f 2>/dev/null || echo "No APKs found"
+      - name: Show APK size
+        run: |
+          echo "=== All APKs found ==="
+          find src-tauri/gen/android -name "*.apk" -type f -exec ls -lh {} \;
+          echo "=== Target APK ==="
+          ls -lh src-tauri/gen/android/app/build/outputs/apk/arm64/debug/app-arm64-debug.apk || ls -lh src-tauri/gen/android/app/build/outputs/apk/*/debug/*.apk 2>/dev/null || echo "APK not found at expected path"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: voice-note-ai-android
-          path: |
-            src-tauri/gen/android/app/build/outputs/apk/universal/debug/*.apk
-            src-tauri/gen/android/app/build/outputs/apk/**/*.apk
+          path: src-tauri/gen/android/app/build/outputs/apk/arm64/debug/app-arm64-debug.apk
           if-no-files-found: warn

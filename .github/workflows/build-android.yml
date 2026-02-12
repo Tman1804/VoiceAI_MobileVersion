@@ -54,6 +54,14 @@ jobs:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
 
+      - name: Add Android permissions for microphone
+        run: |
+          MANIFEST_PATH="src-tauri/gen/android/app/src/main/AndroidManifest.xml"
+          # Add RECORD_AUDIO and related permissions before </manifest>
+          sed -i 's|</manifest>|    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n    <uses-feature android:name="android.hardware.microphone" android:required="true" />\n</manifest>|' "$MANIFEST_PATH"
+          echo "Updated AndroidManifest.xml:"
+          cat "$MANIFEST_PATH"
+
       - name: Build Android APK (Debug)
         run: npm run tauri android build -- --apk --debug
         env:

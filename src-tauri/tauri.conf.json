@@ -37,10 +37,6 @@
     ],
     "iOS": {
       "developmentTeam": ""
-    },
-    "android": {
-      "minSdkVersion": 24,
-      "targetSdkVersion": 34
     }
   },
   "plugins": {

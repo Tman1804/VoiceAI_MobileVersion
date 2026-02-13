@@ -3,9 +3,21 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useAppStore } from '@/store/appStore';
 
+// Detect mobile from user agent as fallback (faster than Tauri plugin)
+const detectMobileFromUA = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+};
+
 // Platform detection
 export function usePlatform() {
-  const [platform, setPlatform] = useState<'desktop' | 'ios' | 'android' | 'web'>('web');
+  // Initialize with user agent detection for faster mobile detection
+  const [platform, setPlatform] = useState<'desktop' | 'ios' | 'android' | 'web'>(() => {
+    if (typeof window === 'undefined') return 'web';
+    if (/Android/i.test(navigator.userAgent)) return 'android';
+    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) return 'ios';
+    return 'web';
+  });
   const [isTauri, setIsTauri] = useState(false);
 
   useEffect(() => {

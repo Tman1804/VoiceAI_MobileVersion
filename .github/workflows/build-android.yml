@@ -75,12 +75,16 @@ jobs:
         run: |
           echo "=== All APKs found ==="
           find src-tauri/gen/android -name "*.apk" -type f -exec ls -lh {} \;
-          echo "=== Target APK ==="
-          ls -lh src-tauri/gen/android/app/build/outputs/apk/arm64/debug/app-arm64-debug.apk || ls -lh src-tauri/gen/android/app/build/outputs/apk/*/debug/*.apk 2>/dev/null || echo "APK not found at expected path"
+
+      - name: Copy APK to output
+        run: |
+          mkdir -p output
+          find src-tauri/gen/android -name "*.apk" -type f | head -1 | xargs -I {} cp {} output/voice-note-ai.apk
+          ls -lh output/
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: voice-note-ai-android
-          path: src-tauri/gen/android/app/build/outputs/apk/arm64/debug/app-arm64-debug.apk
-          if-no-files-found: warn
+          path: output/voice-note-ai.apk
+          if-no-files-found: error

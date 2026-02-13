@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Mic, Square, Loader2 } from 'lucide-react';
+import { Mic, Square, Loader2, X } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import { AudioRecorder } from '@/lib/audioRecorder';
 import { transcribeAudio } from '@/lib/transcriptionService';
@@ -34,11 +34,86 @@ const releaseWakeLock = async () => {
   }
 };
 
+// Check if microphone permission was already granted
+const checkMicrophonePermission = async (): Promise<'granted' | 'denied' | 'prompt'> => {
+  try {
+    if (navigator.permissions) {
+      const result = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+      return result.state as 'granted' | 'denied' | 'prompt';
+    }
+  } catch {
+    // permissions API not supported, assume we need to prompt
+  }
+  return 'prompt';
+};
+
+// Permission Rationale Modal Component
+function PermissionRationaleModal({ 
+  isOpen, 
+  onAccept, 
+  onDecline 
+}: { 
+  isOpen: boolean; 
+  onAccept: () => void; 
+  onDecline: () => void; 
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+      <div className="bg-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl">
+        <div className="flex justify-between items-start mb-4">
+          <div className="w-12 h-12 bg-primary-600 rounded-full flex items-center justify-center">
+            <Mic className="w-6 h-6 text-white" />
+          </div>
+          <button onClick={onDecline} className="text-slate-400 hover:text-white">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        
+        <h2 className="text-xl font-semibold text-white mb-2">
+          Microphone Access Required
+        </h2>
+        
+        <p className="text-slate-300 mb-4">
+          Voice Note AI needs access to your microphone to record audio for transcription.
+        </p>
+        
+        <div className="bg-slate-700/50 rounded-lg p-3 mb-6">
+          <p className="text-sm text-slate-400">
+            <strong className="text-slate-300">How we use your audio:</strong>
+            <br />• Recordings are sent to OpenAI for transcription
+            <br />• Audio is not stored on any server
+            <br />• You control when recording starts and stops
+          </p>
+        </div>
+        
+        <div className="flex gap-3">
+          <button
+            onClick={onDecline}
+            className="flex-1 px-4 py-2.5 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-700 transition-colors"
+          >
+            Not Now
+          </button>
+          <button
+            onClick={onAccept}
+            className="flex-1 px-4 py-2.5 rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors"
+          >
+            Allow Microphone
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function VoiceRecorder() {
   const recorderRef = useRef<AudioRecorder | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const durationRef = useRef(0);
   const [isInitializing, setIsInitializing] = useState(false);
+  const [showPermissionModal, setShowPermissionModal] = useState(false);
+  const [permissionDenied, setPermissionDenied] = useState(false);
 
   const { isRecording, setIsRecording, recordingDuration, setRecordingDuration, setAudioBlob, isTranscribing, setIsTranscribing, isEnriching, setIsEnriching, setTranscription, setEnrichedContent, setError, settings } = useAppStore();
 
@@ -70,7 +145,7 @@ export function VoiceRecorder() {
     finally { setIsTranscribing(false); setIsEnriching(false); }
   }, [settings, setAudioBlob, setIsTranscribing, setError, setTranscription, setIsEnriching, setEnrichedContent]);
 
-  const startRecording = useCallback(async () => {
+  const doStartRecording = useCallback(async () => {
     try {
       setIsInitializing(true); setError(null);
       if (!recorderRef.current) recorderRef.current = new AudioRecorder();
@@ -78,6 +153,7 @@ export function VoiceRecorder() {
       recorderRef.current.setOnDataAvailable(processAudio);
       recorderRef.current.setOnError((error) => setError(error.message));
       await recorderRef.current.startRecording();
+      setPermissionDenied(false);
       triggerHaptic('start');
       await requestWakeLock();
       setIsRecording(true); 
@@ -87,9 +163,42 @@ export function VoiceRecorder() {
         durationRef.current += 1;
         setRecordingDuration(durationRef.current);
       }, 1000);
-    } catch (error: any) { setError(error.message || 'Failed to start recording'); }
+    } catch (error: any) { 
+      if (error.message?.includes('denied') || error.message?.includes('Permission')) {
+        setPermissionDenied(true);
+      }
+      setError(error.message || 'Failed to start recording'); 
+    }
     finally { setIsInitializing(false); }
   }, [processAudio, setError, setIsRecording, setRecordingDuration]);
+
+  const startRecording = useCallback(async () => {
+    const permissionState = await checkMicrophonePermission();
+    
+    if (permissionState === 'denied') {
+      setPermissionDenied(true);
+      setError('Microphone access was denied. Please enable it in your device settings.');
+      return;
+    }
+    
+    if (permissionState === 'prompt') {
+      // Show rationale modal before requesting permission
+      setShowPermissionModal(true);
+      return;
+    }
+    
+    // Permission already granted, proceed
+    doStartRecording();
+  }, [doStartRecording, setError]);
+
+  const handlePermissionAccept = useCallback(() => {
+    setShowPermissionModal(false);
+    doStartRecording();
+  }, [doStartRecording]);
+
+  const handlePermissionDecline = useCallback(() => {
+    setShowPermissionModal(false);
+  }, []);
 
   const stopRecording = useCallback(() => {
     if (recorderRef.current) recorderRef.current.stopRecording();
@@ -129,7 +238,19 @@ export function VoiceRecorder() {
           : (<div className="space-y-2"><p className="text-lg font-medium text-slate-300">Ready to Record</p><p className="text-sm text-slate-400">Tap the microphone to start</p></div>)}
         </div>
         {isRecording && (<div className="flex items-end justify-center gap-1 h-12">{[...Array(12)].map((_, i) => (<div key={i} className="w-2 bg-red-400 rounded-full waveform-bar" style={{ animationDelay: `${i * 0.1}s`, height: `${20 + Math.random() * 80}%` }} />))}</div>)}
+        {permissionDenied && (
+          <div className="mt-4 p-3 bg-red-900/30 border border-red-700 rounded-lg text-center">
+            <p className="text-sm text-red-300">
+              Microphone access denied. Please enable it in your device settings to use voice recording.
+            </p>
+          </div>
+        )}
       </div>
+      <PermissionRationaleModal 
+        isOpen={showPermissionModal} 
+        onAccept={handlePermissionAccept} 
+        onDecline={handlePermissionDecline} 
+      />
     </div>
   );
 }

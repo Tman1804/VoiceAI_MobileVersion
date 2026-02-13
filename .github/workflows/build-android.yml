@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android
 
 on:
   push:
@@ -65,26 +65,58 @@ jobs:
           echo "Updated AndroidManifest.xml:"
           cat "$MANIFEST_PATH"
 
-      - name: Build Android APK (Debug)
+      - name: Configure Gradle for release optimizations
+        run: |
+          # Enable R8 code shrinking for release builds
+          GRADLE_FILE="src-tauri/gen/android/app/build.gradle.kts"
+          if [ -f "$GRADLE_FILE" ]; then
+            sed -i 's/isMinifyEnabled = false/isMinifyEnabled = true/' "$GRADLE_FILE" || true
+            sed -i 's/isShrinkResources = false/isShrinkResources = true/' "$GRADLE_FILE" || true
+          fi
+
+      - name: Build Android APK (Debug - for testing)
         run: npm run tauri android build -- --apk --debug --target aarch64
         env:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
 
-      - name: Show APK size
+      - name: Build Android AAB (Release - for Play Store)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: npm run tauri android build -- --aab --target aarch64
+        env:
+          NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+
+      - name: Show build outputs
         run: |
-          echo "=== All APKs found ==="
+          echo "=== APK files ==="
           find src-tauri/gen/android -name "*.apk" -type f -exec ls -lh {} \;
+          echo "=== AAB files ==="
+          find src-tauri/gen/android -name "*.aab" -type f -exec ls -lh {} \; || echo "No AAB files (release build only on main)"
 
       - name: Copy APK to output
         run: |
           mkdir -p output
-          find src-tauri/gen/android -name "*.apk" -type f | head -1 | xargs -I {} cp {} output/voice-note-ai.apk
+          find src-tauri/gen/android -name "*.apk" -type f | head -1 | xargs -I {} cp {} output/voice-note-ai-debug.apk
           ls -lh output/
 
-      - name: Upload APK
+      - name: Copy AAB to output
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          find src-tauri/gen/android -name "*.aab" -type f | head -1 | xargs -I {} cp {} output/voice-note-ai-release.aab || echo "No AAB found"
+          ls -lh output/
+
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: voice-note-ai-android
-          path: output/voice-note-ai.apk
+          name: voice-note-ai-debug-apk
+          path: output/voice-note-ai-debug.apk
           if-no-files-found: error
+
+      - name: Upload Release AAB (Play Store)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: voice-note-ai-release-aab
+          path: output/voice-note-ai-release.aab
+          if-no-files-found: warn

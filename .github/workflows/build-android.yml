@@ -48,9 +48,6 @@ jobs:
       - name: Install Tauri CLI
         run: npm install -g @tauri-apps/cli@^2.0.0
 
-      - name: Generate app icons from source
-        run: npx @tauri-apps/cli icon src-tauri/icons/appIcon_square.png
-
       - name: Clean previous Android builds
         run: rm -rf src-tauri/gen/android
 
@@ -59,6 +56,9 @@ jobs:
         env:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+
+      - name: Generate app icons (after android init to update Android icons)
+        run: npx @tauri-apps/cli icon src-tauri/icons/appIcon_square.png
 
       - name: Add Android permissions for microphone
         run: |

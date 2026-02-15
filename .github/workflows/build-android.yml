@@ -65,16 +65,14 @@ jobs:
           echo "Updated AndroidManifest.xml:"
           cat "$MANIFEST_PATH"
 
-      - name: Configure Gradle for release optimizations
+      - name: Configure Gradle for Play Store requirements
         run: |
           GRADLE_FILE="src-tauri/gen/android/app/build.gradle.kts"
           if [ -f "$GRADLE_FILE" ]; then
             # Set targetSdk to 34 (Google Play requirement)
             sed -i 's/targetSdk\.set([0-9]*)/targetSdk.set(34)/' "$GRADLE_FILE" || true
-            # Enable R8 code shrinking for release builds
-            sed -i 's/isMinifyEnabled = false/isMinifyEnabled = true/' "$GRADLE_FILE" || true
-            sed -i 's/isShrinkResources = false/isShrinkResources = true/' "$GRADLE_FILE" || true
-            echo "Updated build.gradle.kts"
+            echo "Updated build.gradle.kts - targetSdk set to 34"
+            cat "$GRADLE_FILE" | grep -A5 "defaultConfig" || true
           fi
 
       - name: Build Android APK (Debug - for testing)

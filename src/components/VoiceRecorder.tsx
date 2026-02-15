@@ -34,17 +34,22 @@ const releaseWakeLock = async () => {
   }
 };
 
-// Check if microphone permission was already granted
+// Check if microphone permission was already granted (desktop only - not reliable on mobile WebView)
 const checkMicrophonePermission = async (): Promise<'granted' | 'denied' | 'prompt'> => {
+  // Skip permission pre-check on mobile - just let the browser/system handle it
+  if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    return 'granted'; // Skip rationale modal, let getUserMedia trigger native prompt
+  }
+  
   try {
     if (navigator.permissions) {
       const result = await navigator.permissions.query({ name: 'microphone' as PermissionName });
       return result.state as 'granted' | 'denied' | 'prompt';
     }
   } catch {
-    // permissions API not supported, assume we need to prompt
+    // permissions API not supported, just proceed to recording
   }
-  return 'prompt';
+  return 'granted'; // Default to attempting recording
 };
 
 // Permission Rationale Modal Component

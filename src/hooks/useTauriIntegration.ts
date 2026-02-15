@@ -3,53 +3,46 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useAppStore } from '@/store/appStore';
 
-// Detect mobile from user agent as fallback (faster than Tauri plugin)
-const detectMobileFromUA = (): boolean => {
-  if (typeof window === 'undefined') return false;
-  return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
-};
-
-// Platform detection
+// Platform detection - uses User Agent only (plugin-os not available on Android)
 export function usePlatform() {
-  // Initialize with user agent detection for faster mobile detection
-  const [platform, setPlatform] = useState<'desktop' | 'ios' | 'android' | 'web'>(() => {
-    if (typeof window === 'undefined') return 'web';
-    if (/Android/i.test(navigator.userAgent)) return 'android';
-    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) return 'ios';
-    return 'web';
-  });
+  const [platform, setPlatform] = useState<'desktop' | 'ios' | 'android' | 'web'>('web');
   const [isTauri, setIsTauri] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    const checkPlatform = async () => {
-      if (typeof window !== 'undefined' && '__TAURI__' in window) {
-        setIsTauri(true);
-        try {
-          const { platform: osPlatform } = await import('@tauri-apps/plugin-os');
-          const os = await osPlatform();
-          if (os === 'ios') setPlatform('ios');
-          else if (os === 'android') setPlatform('android');
-          else setPlatform('desktop');
-        } catch {
-          setPlatform('desktop');
-        }
-      }
-    };
-    checkPlatform();
+    // Detect platform from user agent
+    if (/Android/i.test(navigator.userAgent)) {
+      setPlatform('android');
+    } else if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      setPlatform('ios');
+    } else if (typeof window !== 'undefined' && '__TAURI__' in window) {
+      setPlatform('desktop');
+    }
+
+    // Check if running in Tauri
+    if (typeof window !== 'undefined' && '__TAURI__' in window) {
+      setIsTauri(true);
+    }
+    
+    setIsReady(true);
   }, []);
 
-  return { platform, isTauri, isMobile: platform === 'ios' || platform === 'android' };
+  const isMobile = platform === 'ios' || platform === 'android';
+  return { platform, isTauri, isMobile, isReady };
 }
 
 export function useTauriIntegration() {
   const { isRecording } = useAppStore();
-  const { platform, isTauri, isMobile } = usePlatform();
+  const { platform, isTauri, isMobile, isReady } = usePlatform();
 
   const toggleRecording = useCallback(() => {
     window.dispatchEvent(new CustomEvent('toggle-recording'));
   }, []);
 
   useEffect(() => {
+    // Wait until platform detection is ready
+    if (!isReady) return;
+
     // Keyboard shortcut for web/desktop only
     if (!isTauri || isMobile) {
       const handleKeyDown = (e: KeyboardEvent) => {
@@ -76,7 +69,7 @@ export function useTauriIntegration() {
       const cleanup = setupGlobalShortcut();
       return () => { cleanup.then((fn) => fn?.()); };
     }
-  }, [toggleRecording, isRecording, isTauri, platform, isMobile]);
+  }, [toggleRecording, isRecording, isTauri, platform, isMobile, isReady]);
 
-  return { platform, isTauri, isMobile };
+  return { platform, isTauri, isMobile, isReady };
 }

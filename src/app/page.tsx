@@ -19,7 +19,7 @@ export default function Home() {
           <div className="p-2 bg-primary-600 rounded-lg">
             <Mic className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-xl font-semibold text-white">Voice Note AI</h1>
+          <h1 className="text-xl font-semibold text-white">VoxWarp</h1>
         </div>
         <button
           onClick={() => setShowSettings(!showSettings)}

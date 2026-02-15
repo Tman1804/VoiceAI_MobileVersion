@@ -1,4 +1,4 @@
-# Voice Note AI
+# VoxWarp
 
 A cross-platform application for capturing voice notes and transforming them with AI. Built with Next.js, Tauri 2.0, and OpenAI.
 

@@ -22,7 +22,7 @@ export function ResultsDisplay() {
     try {
       if (navigator.share) {
         await navigator.share({
-          title: 'Voice Note AI',
+          title: 'VoxWarp',
           text: text,
         });
       } else {

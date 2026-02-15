@@ -1,4 +1,4 @@
-# Voice Note AI - Copilot Instructions
+# VoxWarp - Copilot Instructions
 
 ## Architecture Overview
 

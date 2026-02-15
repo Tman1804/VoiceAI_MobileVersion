@@ -1,7 +1,7 @@
 {
-  "productName": "Voice Note AI",
+  "productName": "VoxWarp",
   "version": "1.0.0",
-  "identifier": "com.voicenoteai.app",
+  "identifier": "com.voxwarp.app",
   "build": {
     "beforeBuildCommand": "npm run build",
     "beforeDevCommand": "npm run dev",
@@ -13,7 +13,7 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "Voice Note AI",
+        "title": "VoxWarp",
         "width": 800,
         "height": 600,
         "minWidth": 400,

@@ -1,6 +1,6 @@
 {
   "identifier": "default",
-  "description": "Default permissions for Voice Note AI",
+  "description": "Default permissions for VoxWarp",
   "windows": ["main"],
   "permissions": [
     "core:default",

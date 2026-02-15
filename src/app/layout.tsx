@@ -5,7 +5,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Voice Note AI',
+  title: 'VoxWarp',
   description: 'Capture voice notes and transform them with AI',
 }
 

@@ -1,10 +1,10 @@
-# Privacy Policy for Voice Note AI
+# Privacy Policy for VoxWarp
 
-**Last updated:** February 13, 2026
+**Last updated:** February 15, 2026
 
 ## Overview
 
-Voice Note AI is a voice recording and transcription application. This privacy policy explains how we handle your data.
+VoxWarp is a voice recording and transcription application. This privacy policy explains how we handle your data.
 
 ## Data Collection
 

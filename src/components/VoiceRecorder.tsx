@@ -81,7 +81,7 @@ function PermissionRationaleModal({
         </h2>
         
         <p className="text-slate-300 mb-4">
-          Voice Note AI needs access to your microphone to record audio for transcription.
+          VoxWarp needs access to your microphone to record audio for transcription.
         </p>
         
         <div className="bg-slate-700/50 rounded-lg p-3 mb-6">

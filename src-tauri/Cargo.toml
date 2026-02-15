@@ -1,12 +1,12 @@
 [package]
-name = "voice-note-ai"
+name = "voxwarp"
 version = "1.0.0"
-description = "Voice Note AI Desktop Application"
-authors = ["Voice Note AI"]
+description = "VoxWarp Desktop Application"
+authors = ["VoxWarp"]
 edition = "2021"
 
 [lib]
-name = "voice_note_ai_lib"
+name = "voxwarp_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

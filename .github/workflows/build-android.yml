@@ -48,6 +48,9 @@ jobs:
       - name: Install Tauri CLI
         run: npm install -g @tauri-apps/cli@^2.0.0
 
+      - name: Generate app icons from source
+        run: npx @tauri-apps/cli icon src-tauri/icons/appIcon.png
+
       - name: Clean previous Android builds
         run: rm -rf src-tauri/gen/android
 

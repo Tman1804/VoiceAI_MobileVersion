@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Copy, Download, Check, FileText, Sparkles, RefreshCw, Share2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Copy, Check, FileText, Sparkles, RefreshCw, Share2 } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import { enrichTranscript, getEnrichmentModeLabel } from '@/lib/enrichmentService';
 
@@ -9,77 +9,34 @@ export function ResultsDisplay() {
   const { transcription, enrichedContent, settings, isEnriching, setIsEnriching, setEnrichedContent, setError } = useAppStore();
   const [activeTab, setActiveTab] = useState<'transcription' | 'enriched'>('enriched');
   const [copiedField, setCopiedField] = useState<string | null>(null);
-  const [exportStatus, setExportStatus] = useState<string | null>(null);
+  const [canShare, setCanShare] = useState(false);
+
+  // Check if Web Share API is available
+  useEffect(() => {
+    setCanShare(typeof navigator !== 'undefined' && !!navigator.share);
+  }, []);
 
   const handleCopy = async (text: string, field: string) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedField(field);
       setTimeout(() => setCopiedField(null), 2000);
-    } catch (error) { console.error('Failed to copy:', error); }
+    } catch (error) { 
+      console.error('Failed to copy:', error);
+    }
   };
 
   const handleShare = async (text: string) => {
     try {
-      if (navigator.share) {
-        await navigator.share({
-          title: 'VoxWarp',
-          text: text,
-        });
-      } else {
-        // Fallback: copy to clipboard with feedback
-        await handleCopy(text, 'shared');
-        setCopiedField('shared');
-        setTimeout(() => setCopiedField(null), 2000);
-      }
+      await navigator.share({
+        title: 'VoxWarp',
+        text: text,
+      });
     } catch (error) {
       if ((error as Error).name !== 'AbortError') {
-        console.error('Failed to share:', error);
-        // Fallback to copy on error
+        console.error('Share failed:', error);
+        // Fallback to copy
         await handleCopy(text, 'shared');
-      }
-    }
-  };
-
-  const handleExport = async (text: string, filename: string) => {
-    try {
-      const blob = new Blob([text], { type: 'text/plain' });
-      const file = new File([blob], filename, { type: 'text/plain' });
-      
-      // Try Web Share API with file (works well on Android)
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: 'VoxWarp Export',
-        });
-        setExportStatus('exported');
-        setTimeout(() => setExportStatus(null), 2000);
-        return;
-      }
-      
-      // Fallback: download via blob URL (desktop browsers)
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click();
-      
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 100);
-      
-      setExportStatus('exported');
-      setTimeout(() => setExportStatus(null), 2000);
-    } catch (error) {
-      if ((error as Error).name !== 'AbortError') {
-        console.error('Export failed:', error);
-        // Ultimate fallback: copy to clipboard
-        await handleCopy(text, activeTab);
-        setExportStatus('exported');
-        setTimeout(() => setExportStatus(null), 2000);
       }
     }
   };
@@ -115,14 +72,13 @@ export function ResultsDisplay() {
                   <RefreshCw className={`w-4 h-4 ${isEnriching ? 'animate-spin' : ''}`} /><span>Redo</span>
                 </button>
               )}
-              <button onClick={() => handleShare(displayContent)} className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors touch-target">
-                {copiedField === 'shared' ? (<><Check className="w-4 h-4" /><span>Copied</span></>) : (<><Share2 className="w-4 h-4" /><span>Share</span></>)}
-              </button>
+              {canShare && (
+                <button onClick={() => handleShare(displayContent)} className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors touch-target">
+                  <Share2 className="w-4 h-4" /><span>Share</span>
+                </button>
+              )}
               <button onClick={() => handleCopy(displayContent, activeTab)} className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors touch-target">
                 {copiedField === activeTab ? (<><Check className="w-4 h-4 text-green-400" /><span>Copied</span></>) : (<><Copy className="w-4 h-4" /><span>Copy</span></>)}
-              </button>
-              <button onClick={() => handleExport(displayContent, `voxwarp-${activeTab}.txt`)} className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors touch-target">
-                {exportStatus === 'exported' ? (<><Check className="w-4 h-4 text-green-400" /><span>Saved</span></>) : (<><Download className="w-4 h-4" /><span>Export</span></>)}
               </button>
             </div>
             <div className="bg-slate-900 rounded-lg p-4 max-h-96 overflow-y-auto">

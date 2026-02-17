@@ -9,6 +9,7 @@ export function ResultsDisplay() {
   const { transcription, enrichedContent, settings, isEnriching, setIsEnriching, setEnrichedContent, setError } = useAppStore();
   const [activeTab, setActiveTab] = useState<'transcription' | 'enriched'>('enriched');
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [exportStatus, setExportStatus] = useState<string | null>(null);
 
   const handleCopy = async (text: string, field: string) => {
     try {
@@ -26,22 +27,61 @@ export function ResultsDisplay() {
           text: text,
         });
       } else {
-        await handleCopy(text, activeTab);
+        // Fallback: copy to clipboard with feedback
+        await handleCopy(text, 'shared');
+        setCopiedField('shared');
+        setTimeout(() => setCopiedField(null), 2000);
       }
     } catch (error) {
       if ((error as Error).name !== 'AbortError') {
         console.error('Failed to share:', error);
+        // Fallback to copy on error
+        await handleCopy(text, 'shared');
       }
     }
   };
 
   const handleExport = async (text: string, filename: string) => {
-    const blob = new Blob([text], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = filename;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    try {
+      const blob = new Blob([text], { type: 'text/plain' });
+      const file = new File([blob], filename, { type: 'text/plain' });
+      
+      // Try Web Share API with file (works well on Android)
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'VoxWarp Export',
+        });
+        setExportStatus('exported');
+        setTimeout(() => setExportStatus(null), 2000);
+        return;
+      }
+      
+      // Fallback: download via blob URL (desktop browsers)
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+      
+      setExportStatus('exported');
+      setTimeout(() => setExportStatus(null), 2000);
+    } catch (error) {
+      if ((error as Error).name !== 'AbortError') {
+        console.error('Export failed:', error);
+        // Ultimate fallback: copy to clipboard
+        await handleCopy(text, activeTab);
+        setExportStatus('exported');
+        setTimeout(() => setExportStatus(null), 2000);
+      }
+    }
   };
 
   const handleReEnrich = async () => {
@@ -69,25 +109,21 @@ export function ResultsDisplay() {
       <div className="p-6">
         {displayContent ? (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {activeTab === 'enriched' && transcription && (
-                  <button onClick={handleReEnrich} disabled={isEnriching} className="flex items-center gap-2 px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors disabled:opacity-50">
-                    <RefreshCw className={`w-4 h-4 ${isEnriching ? 'animate-spin' : ''}`} />Re-process
-                  </button>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <button onClick={() => handleShare(displayContent)} className="flex items-center gap-2 px-3 py-1.5 text-sm bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors touch-target">
-                  <Share2 className="w-4 h-4" />Share
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              {activeTab === 'enriched' && transcription && (
+                <button onClick={handleReEnrich} disabled={isEnriching} className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors disabled:opacity-50 touch-target">
+                  <RefreshCw className={`w-4 h-4 ${isEnriching ? 'animate-spin' : ''}`} /><span>Redo</span>
                 </button>
-                <button onClick={() => handleCopy(displayContent, activeTab)} className="flex items-center gap-2 px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors touch-target">
-                  {copiedField === activeTab ? (<><Check className="w-4 h-4 text-green-400" />Copied!</>) : (<><Copy className="w-4 h-4" />Copy</>)}
-                </button>
-                <button onClick={() => handleExport(displayContent, `voice-note-${activeTab}.txt`)} className="flex items-center gap-2 px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors touch-target">
-                  <Download className="w-4 h-4" />Export
-                </button>
-              </div>
+              )}
+              <button onClick={() => handleShare(displayContent)} className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors touch-target">
+                {copiedField === 'shared' ? (<><Check className="w-4 h-4" /><span>Copied</span></>) : (<><Share2 className="w-4 h-4" /><span>Share</span></>)}
+              </button>
+              <button onClick={() => handleCopy(displayContent, activeTab)} className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors touch-target">
+                {copiedField === activeTab ? (<><Check className="w-4 h-4 text-green-400" /><span>Copied</span></>) : (<><Copy className="w-4 h-4" /><span>Copy</span></>)}
+              </button>
+              <button onClick={() => handleExport(displayContent, `voxwarp-${activeTab}.txt`)} className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors touch-target">
+                {exportStatus === 'exported' ? (<><Check className="w-4 h-4 text-green-400" /><span>Saved</span></>) : (<><Download className="w-4 h-4" /><span>Export</span></>)}
+              </button>
             </div>
             <div className="bg-slate-900 rounded-lg p-4 max-h-96 overflow-y-auto">
               <pre className="whitespace-pre-wrap text-slate-200 text-sm font-sans leading-relaxed">{displayContent}</pre>

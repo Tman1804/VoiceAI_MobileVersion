@@ -3,14 +3,18 @@
 import { VoiceRecorder } from '@/components/VoiceRecorder';
 import { ResultsDisplay } from '@/components/ResultsDisplay';
 import { SettingsPanel } from '@/components/SettingsPanel';
-import { useAppStore } from '@/store/appStore';
+import { useAppStore, EnrichmentMode } from '@/store/appStore';
 import { useTauriIntegration } from '@/hooks/useTauriIntegration';
-import { Settings, Mic, X, AlertCircle } from 'lucide-react';
+import { Settings, Mic, X, AlertCircle, ChevronDown } from 'lucide-react';
+import { getEnrichmentModeLabel } from '@/lib/enrichmentService';
+import { useState } from 'react';
+
+const ENRICHMENT_MODES: EnrichmentMode[] = ['clean-transcript', 'summarize', 'action-items', 'meeting-notes', 'custom'];
 
 export default function Home() {
-  const { showSettings, setShowSettings, transcription, enrichedContent, error, setError } = useAppStore();
-  
+  const { showSettings, setShowSettings, transcription, enrichedContent, error, setError, settings, updateSettings } = useAppStore();
   const { isMobile } = useTauriIntegration();
+  const [showModeDropdown, setShowModeDropdown] = useState(false);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 safe-area-inset">
@@ -42,11 +46,46 @@ export default function Home() {
         </div>
       )}
 
-      <div className={`container mx-auto px-4 py-8 max-w-4xl ${isMobile ? 'pb-8' : 'pb-20'}`}>
+      <div className={`container mx-auto px-4 py-6 max-w-4xl ${isMobile ? 'pb-6' : 'pb-20'}`}>
         {showSettings ? (
           <SettingsPanel />
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-6">
+            {/* AI Mode Selector - Compact Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setShowModeDropdown(!showModeDropdown)}
+                className="w-full flex items-center justify-between px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white hover:border-slate-600 transition-colors"
+              >
+                <span className="text-sm text-slate-400">AI Mode:</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{getEnrichmentModeLabel(settings.enrichmentMode)}</span>
+                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${showModeDropdown ? 'rotate-180' : ''}`} />
+                </div>
+              </button>
+              
+              {showModeDropdown && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setShowModeDropdown(false)} />
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-xl z-20">
+                    {ENRICHMENT_MODES.map((mode) => (
+                      <button
+                        key={mode}
+                        onClick={() => {
+                          updateSettings({ enrichmentMode: mode });
+                          setShowModeDropdown(false);
+                        }}
+                        className={`w-full px-4 py-3 text-left hover:bg-slate-700 transition-colors flex items-center justify-between ${settings.enrichmentMode === mode ? 'bg-primary-600/20 text-primary-400' : 'text-white'}`}
+                      >
+                        <span>{getEnrichmentModeLabel(mode)}</span>
+                        {settings.enrichmentMode === mode && <span className="text-primary-400">✓</span>}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
             <VoiceRecorder />
             {(transcription || enrichedContent) && <ResultsDisplay />}
           </div>

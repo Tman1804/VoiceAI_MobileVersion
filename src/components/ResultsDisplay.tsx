@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Copy, Check, FileText, Sparkles, RefreshCw, Share2 } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import { enrichTranscript, getEnrichmentModeLabel } from '@/lib/enrichmentService';
@@ -9,12 +9,7 @@ export function ResultsDisplay() {
   const { transcription, enrichedContent, settings, isEnriching, setIsEnriching, setEnrichedContent, setError } = useAppStore();
   const [activeTab, setActiveTab] = useState<'transcription' | 'enriched'>('enriched');
   const [copiedField, setCopiedField] = useState<string | null>(null);
-  const [canShare, setCanShare] = useState(false);
-
-  // Check if Web Share API is available
-  useEffect(() => {
-    setCanShare(typeof navigator !== 'undefined' && !!navigator.share);
-  }, []);
+  const [shareStatus, setShareStatus] = useState<'idle' | 'shared' | 'copied'>('idle');
 
   const handleCopy = async (text: string, field: string) => {
     try {
@@ -27,17 +22,36 @@ export function ResultsDisplay() {
   };
 
   const handleShare = async (text: string) => {
+    // Try Tauri sharesheet plugin first (Android/iOS)
     try {
-      await navigator.share({
-        title: 'VoxWarp',
-        text: text,
-      });
-    } catch (error) {
-      if ((error as Error).name !== 'AbortError') {
-        console.error('Share failed:', error);
-        // Fallback to copy
-        await handleCopy(text, 'shared');
+      const { shareText } = await import('@tauri-apps/plugin-sharesheet');
+      await shareText(text, { mimeType: 'text/plain' });
+      setShareStatus('shared');
+      setTimeout(() => setShareStatus('idle'), 2000);
+      return;
+    } catch (e) {
+      // Plugin not available or failed, try fallbacks
+    }
+
+    // Try Web Share API (some browsers)
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'VoxWarp', text: text });
+        setShareStatus('shared');
+        setTimeout(() => setShareStatus('idle'), 2000);
+        return;
+      } catch (error) {
+        if ((error as Error).name === 'AbortError') return;
       }
+    }
+
+    // Ultimate fallback: copy to clipboard
+    try {
+      await navigator.clipboard.writeText(text);
+      setShareStatus('copied');
+      setTimeout(() => setShareStatus('idle'), 2000);
+    } catch (error) {
+      console.error('All share methods failed:', error);
     }
   };
 
@@ -72,11 +86,11 @@ export function ResultsDisplay() {
                   <RefreshCw className={`w-4 h-4 ${isEnriching ? 'animate-spin' : ''}`} /><span>Redo</span>
                 </button>
               )}
-              {canShare && (
-                <button onClick={() => handleShare(displayContent)} className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors touch-target">
-                  <Share2 className="w-4 h-4" /><span>Share</span>
-                </button>
-              )}
+              <button onClick={() => handleShare(displayContent)} className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors touch-target">
+                {shareStatus === 'shared' ? (<><Check className="w-4 h-4" /><span>Shared</span></>) : 
+                 shareStatus === 'copied' ? (<><Check className="w-4 h-4" /><span>Copied</span></>) : 
+                 (<><Share2 className="w-4 h-4" /><span>Share</span></>)}
+              </button>
               <button onClick={() => handleCopy(displayContent, activeTab)} className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors touch-target">
                 {copiedField === activeTab ? (<><Check className="w-4 h-4 text-green-400" /><span>Copied</span></>) : (<><Copy className="w-4 h-4" /><span>Copy</span></>)}
               </button>

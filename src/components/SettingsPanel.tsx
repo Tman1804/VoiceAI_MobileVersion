@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Eye, EyeOff, Save, ArrowLeft, ExternalLink, FileText, Shield } from 'lucide-react';
+import { Eye, EyeOff, Save, ArrowLeft, ChevronRight, FileText, Shield } from 'lucide-react';
 import { useAppStore, OutputLanguage } from '@/store/appStore';
 import { getLanguageLabel } from '@/lib/enrichmentService';
+import { LegalModal } from './LegalModal';
 
 const OUTPUT_LANGUAGES: OutputLanguage[] = ['auto', 'de', 'en', 'fr', 'es', 'it', 'pt', 'nl', 'pl', 'ru', 'ja', 'zh', 'ko'];
 
@@ -12,6 +13,7 @@ export function SettingsPanel() {
   const [showApiKey, setShowApiKey] = useState(false);
   const [localSettings, setLocalSettings] = useState(settings);
   const [saved, setSaved] = useState(false);
+  const [legalModal, setLegalModal] = useState<'privacy' | 'terms' | null>(null);
 
   const handleSave = () => { 
     updateSettings(localSettings); 
@@ -102,36 +104,38 @@ export function SettingsPanel() {
         <div className="border-t border-slate-700 pt-4 mt-4">
           <p className="text-sm text-slate-400 mb-3">Legal</p>
           <div className="space-y-2">
-            <a 
-              href="https://github.com/Tman1804/VoiceAI_MobileVersion/blob/main/PRIVACY_POLICY.md" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center justify-between py-2.5 px-3 bg-slate-900/50 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors"
+            <button 
+              onClick={() => setLegalModal('privacy')}
+              className="w-full flex items-center justify-between py-2.5 px-3 bg-slate-900/50 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors"
             >
               <div className="flex items-center gap-3">
                 <Shield className="w-4 h-4" />
-                <span>Privacy Policy</span>
+                <span>Datenschutz</span>
               </div>
-              <ExternalLink className="w-4 h-4 text-slate-500" />
-            </a>
-            <a 
-              href="https://github.com/Tman1804/VoiceAI_MobileVersion/blob/main/TERMS_OF_SERVICE.md" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center justify-between py-2.5 px-3 bg-slate-900/50 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors"
+              <ChevronRight className="w-4 h-4 text-slate-500" />
+            </button>
+            <button 
+              onClick={() => setLegalModal('terms')}
+              className="w-full flex items-center justify-between py-2.5 px-3 bg-slate-900/50 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors"
             >
               <div className="flex items-center gap-3">
                 <FileText className="w-4 h-4" />
-                <span>Terms of Service</span>
+                <span>Nutzungsbedingungen</span>
               </div>
-              <ExternalLink className="w-4 h-4 text-slate-500" />
-            </a>
+              <ChevronRight className="w-4 h-4 text-slate-500" />
+            </button>
           </div>
         </div>
 
         {/* Version */}
         <p className="text-center text-xs text-slate-600 pt-2">VoxWarp v1.0.0</p>
       </div>
+
+      <LegalModal 
+        isOpen={legalModal !== null} 
+        onClose={() => setLegalModal(null)} 
+        type={legalModal || 'privacy'} 
+      />
     </div>
   );
 }

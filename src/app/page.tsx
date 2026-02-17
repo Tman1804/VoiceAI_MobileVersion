@@ -9,7 +9,7 @@ import { Settings, Mic, X, AlertCircle, ChevronDown } from 'lucide-react';
 import { getEnrichmentModeLabel } from '@/lib/enrichmentService';
 import { useState } from 'react';
 
-const ENRICHMENT_MODES: EnrichmentMode[] = ['clean-transcript', 'summarize', 'action-items', 'meeting-notes', 'custom'];
+const ENRICHMENT_MODES: EnrichmentMode[] = ['clean-transcript', 'summarize', 'action-items', 'meeting-notes'];
 
 export default function Home() {
   const { showSettings, setShowSettings, transcription, enrichedContent, error, setError, settings, updateSettings } = useAppStore();

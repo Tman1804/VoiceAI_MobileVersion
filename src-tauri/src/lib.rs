@@ -13,10 +13,10 @@ pub fn run() {
         builder = builder.plugin(tauri_plugin_global_shortcut::Builder::new().build());
     }
 
-    // Register sharesheet plugin on mobile platforms
+    // Register sharekit plugin on mobile platforms
     #[cfg(any(target_os = "android", target_os = "ios"))]
     {
-        builder = builder.plugin(tauri_plugin_sharesheet::init());
+        builder = builder.plugin(tauri_plugin_sharekit::init());
     }
 
     builder

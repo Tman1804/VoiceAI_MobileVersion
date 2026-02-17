@@ -22,10 +22,10 @@ export function ResultsDisplay() {
   };
 
   const handleShare = async (text: string) => {
-    // Try Tauri sharesheet plugin first (Android/iOS)
+    // Try Tauri sharekit plugin first (Android/iOS)
     try {
-      const { shareText } = await import('@tauri-apps/plugin-sharesheet');
-      await shareText(text, { mimeType: 'text/plain' });
+      const { share } = await import('@choochmeque/tauri-plugin-sharekit-api');
+      await share({ text });
       setShareStatus('shared');
       setTimeout(() => setShareStatus('idle'), 2000);
       return;

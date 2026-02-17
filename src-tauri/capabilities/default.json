@@ -22,6 +22,6 @@
     "fs:allow-write",
     "shell:default",
     "shell:allow-open",
-    "sharesheet:default"
+    "sharekit:default"
   ]
 }

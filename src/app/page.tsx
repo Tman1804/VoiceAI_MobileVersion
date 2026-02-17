@@ -3,16 +3,18 @@
 import { VoiceRecorder } from '@/components/VoiceRecorder';
 import { ResultsDisplay } from '@/components/ResultsDisplay';
 import { SettingsPanel } from '@/components/SettingsPanel';
+import { HistoryList } from '@/components/HistoryList';
+import { HistoryDetail } from '@/components/HistoryDetail';
 import { useAppStore, EnrichmentMode } from '@/store/appStore';
 import { useTauriIntegration } from '@/hooks/useTauriIntegration';
-import { Settings, Mic, X, AlertCircle, ChevronDown } from 'lucide-react';
+import { Settings, Mic, X, AlertCircle, ChevronDown, Clock } from 'lucide-react';
 import { getEnrichmentModeLabel } from '@/lib/enrichmentService';
 import { useState } from 'react';
 
 const ENRICHMENT_MODES: EnrichmentMode[] = ['clean-transcript', 'summarize', 'action-items', 'meeting-notes'];
 
 export default function Home() {
-  const { showSettings, setShowSettings, transcription, enrichedContent, error, setError, settings, updateSettings } = useAppStore();
+  const { viewMode, setViewMode, transcription, enrichedContent, error, setError, settings, updateSettings, recordings } = useAppStore();
   const { isMobile } = useTauriIntegration();
   const [showModeDropdown, setShowModeDropdown] = useState(false);
 
@@ -25,13 +27,25 @@ export default function Home() {
           </div>
           <h1 className="text-xl font-semibold text-white">VoxWarp</h1>
         </div>
-        <button
-          onClick={() => setShowSettings(!showSettings)}
-          className="p-3 hover:bg-slate-700 rounded-lg transition-colors touch-target"
-          title="Settings"
-        >
-          <Settings className="w-5 h-5 text-slate-400" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setViewMode(viewMode === 'history' || viewMode === 'history-detail' ? 'recording' : 'history')}
+            className="p-3 hover:bg-slate-700 rounded-lg transition-colors touch-target relative"
+            title="History"
+          >
+            <Clock className={`w-5 h-5 ${viewMode === 'history' || viewMode === 'history-detail' ? 'text-primary-400' : 'text-slate-400'}`} />
+            {recordings.length > 0 && (
+              <span className="absolute top-1 right-1 w-2 h-2 bg-primary-500 rounded-full" />
+            )}
+          </button>
+          <button
+            onClick={() => setViewMode(viewMode === 'settings' ? 'recording' : 'settings')}
+            className="p-3 hover:bg-slate-700 rounded-lg transition-colors touch-target"
+            title="Settings"
+          >
+            <Settings className={`w-5 h-5 ${viewMode === 'settings' ? 'text-primary-400' : 'text-slate-400'}`} />
+          </button>
+        </div>
       </header>
 
       {error && (
@@ -47,9 +61,10 @@ export default function Home() {
       )}
 
       <div className={`container mx-auto px-4 py-6 max-w-4xl ${isMobile ? 'pb-6' : 'pb-20'}`}>
-        {showSettings ? (
-          <SettingsPanel />
-        ) : (
+        {viewMode === 'settings' && <SettingsPanel />}
+        {viewMode === 'history' && <HistoryList />}
+        {viewMode === 'history-detail' && <HistoryDetail />}
+        {viewMode === 'recording' && (
           <div className="space-y-6">
             {/* AI Mode Selector - Compact Dropdown */}
             <div className="relative">

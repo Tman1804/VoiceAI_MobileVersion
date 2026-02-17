@@ -120,14 +120,17 @@ export function VoiceRecorder() {
   const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [permissionDenied, setPermissionDenied] = useState(false);
 
-  const { isRecording, setIsRecording, recordingDuration, setRecordingDuration, setAudioBlob, isTranscribing, setIsTranscribing, isEnriching, setIsEnriching, setTranscription, setEnrichedContent, setError, settings } = useAppStore();
+  const { isRecording, setIsRecording, recordingDuration, setRecordingDuration, setAudioBlob, isTranscribing, setIsTranscribing, isEnriching, setIsEnriching, setTranscription, setEnrichedContent, setError, settings, addRecording } = useAppStore();
 
   const processAudio = useCallback(async (blob: Blob) => {
+    const finalDuration = durationRef.current;
     setAudioBlob(blob);
     setIsTranscribing(true);
     setError(null);
+    let transcript = '';
+    let enriched = '';
     try {
-      const transcript = await transcribeAudio(
+      transcript = await transcribeAudio(
         blob, 
         settings.openAiApiKey, 
         settings.outputLanguage, 
@@ -136,7 +139,7 @@ export function VoiceRecorder() {
       setTranscription(transcript);
       if (settings.autoEnrich && transcript) {
         setIsEnriching(true);
-        const enriched = await enrichTranscript(
+        enriched = await enrichTranscript(
           transcript, 
           settings.openAiApiKey, 
           settings.enrichmentMode, 
@@ -146,9 +149,20 @@ export function VoiceRecorder() {
         setEnrichedContent(enriched);
         if (settings.autoCopyToClipboard) await navigator.clipboard.writeText(enriched);
       }
+      // Auto-save to history
+      if (transcript) {
+        addRecording({
+          timestamp: Date.now(),
+          duration: finalDuration,
+          transcription: transcript,
+          enrichedContent: enriched,
+          mode: settings.enrichmentMode,
+          language: settings.outputLanguage
+        });
+      }
     } catch (error: any) { setError(error.message || 'An error occurred'); }
     finally { setIsTranscribing(false); setIsEnriching(false); }
-  }, [settings, setAudioBlob, setIsTranscribing, setError, setTranscription, setIsEnriching, setEnrichedContent]);
+  }, [settings, setAudioBlob, setIsTranscribing, setError, setTranscription, setIsEnriching, setEnrichedContent, addRecording]);
 
   const doStartRecording = useCallback(async () => {
     try {

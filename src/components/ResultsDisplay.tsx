@@ -22,18 +22,7 @@ export function ResultsDisplay() {
   };
 
   const handleShare = async (text: string) => {
-    // Try Tauri sharekit plugin first (Android/iOS)
-    try {
-      const { share } = await import('@choochmeque/tauri-plugin-sharekit-api');
-      await share({ text });
-      setShareStatus('shared');
-      setTimeout(() => setShareStatus('idle'), 2000);
-      return;
-    } catch (e) {
-      // Plugin not available or failed, try fallbacks
-    }
-
-    // Try Web Share API (some browsers)
+    // Try Web Share API first (works on mobile browsers and some desktop)
     if (navigator.share) {
       try {
         await navigator.share({ title: 'VoxWarp', text: text });
@@ -42,16 +31,17 @@ export function ResultsDisplay() {
         return;
       } catch (error) {
         if ((error as Error).name === 'AbortError') return;
+        // Share failed, fall through to clipboard
       }
     }
 
-    // Ultimate fallback: copy to clipboard
+    // Fallback: copy to clipboard
     try {
       await navigator.clipboard.writeText(text);
       setShareStatus('copied');
       setTimeout(() => setShareStatus('idle'), 2000);
     } catch (error) {
-      console.error('All share methods failed:', error);
+      console.error('Share/copy failed:', error);
     }
   };
 

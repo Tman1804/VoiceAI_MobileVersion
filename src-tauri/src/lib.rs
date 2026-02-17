@@ -13,12 +13,6 @@ pub fn run() {
         builder = builder.plugin(tauri_plugin_global_shortcut::Builder::new().build());
     }
 
-    // Register sharekit plugin on mobile platforms
-    #[cfg(any(target_os = "android", target_os = "ios"))]
-    {
-        builder = builder.plugin(tauri_plugin_sharekit::init());
-    }
-
     builder
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -21,7 +21,6 @@
     "fs:allow-read",
     "fs:allow-write",
     "shell:default",
-    "shell:allow-open",
-    "sharekit:default"
+    "shell:allow-open"
   ]
 }

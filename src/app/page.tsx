@@ -1,22 +1,50 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { VoiceRecorder } from '@/components/VoiceRecorder';
 import { ResultsDisplay } from '@/components/ResultsDisplay';
 import { SettingsPanel } from '@/components/SettingsPanel';
 import { HistoryList } from '@/components/HistoryList';
 import { HistoryDetail } from '@/components/HistoryDetail';
+import { AuthScreen } from '@/components/AuthScreen';
+import { UsageDisplay } from '@/components/UsageDisplay';
 import { useAppStore, EnrichmentMode } from '@/store/appStore';
+import { useAuthStore } from '@/store/authStore';
 import { useTauriIntegration } from '@/hooks/useTauriIntegration';
-import { Settings, Mic, X, AlertCircle, ChevronDown, Clock } from 'lucide-react';
+import { Settings, Mic, X, AlertCircle, ChevronDown, Clock, LogOut, Loader2 } from 'lucide-react';
 import { getEnrichmentModeLabel } from '@/lib/enrichmentService';
-import { useState } from 'react';
 
 const ENRICHMENT_MODES: EnrichmentMode[] = ['clean-transcript', 'summarize', 'action-items', 'meeting-notes'];
 
 export default function Home() {
   const { viewMode, setViewMode, transcription, enrichedContent, error, setError, settings, updateSettings, recordings } = useAppStore();
+  const { user, loading: authLoading, initialized, initialize, logout } = useAuthStore();
   const { isMobile } = useTauriIntegration();
   const [showModeDropdown, setShowModeDropdown] = useState(false);
+
+  // Initialize auth on mount
+  useEffect(() => {
+    if (!initialized) {
+      initialize();
+    }
+  }, [initialized, initialize]);
+
+  // Show loading while initializing auth
+  if (!initialized || authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-primary-500 animate-spin mx-auto mb-4" />
+          <p className="text-slate-400">Laden...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show auth screen if not logged in
+  if (!user) {
+    return <AuthScreen onSuccess={() => initialize()} />;
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 safe-area-inset">
@@ -45,6 +73,13 @@ export default function Home() {
           >
             <Settings className={`w-5 h-5 ${viewMode === 'settings' ? 'text-primary-400' : 'text-slate-400'}`} />
           </button>
+          <button
+            onClick={logout}
+            className="p-3 hover:bg-slate-700 rounded-lg transition-colors touch-target"
+            title="Logout"
+          >
+            <LogOut className="w-5 h-5 text-slate-400" />
+          </button>
         </div>
       </header>
 
@@ -65,7 +100,10 @@ export default function Home() {
         {viewMode === 'history' && <HistoryList />}
         {viewMode === 'history-detail' && <HistoryDetail />}
         {viewMode === 'recording' && (
-          <div className="space-y-6">
+          <div className="space-y-4">
+            {/* Usage Display */}
+            <UsageDisplay />
+            
             {/* AI Mode Selector - Compact Dropdown */}
             <div className="relative">
               <button

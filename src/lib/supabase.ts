@@ -30,27 +30,41 @@ export async function signIn(email: string, password: string) {
 
 export async function signInWithGoogle() {
   // Check if running in Tauri (mobile/desktop app)
-  const isTauri = typeof window !== 'undefined' && '__TAURI__' in window;
+  // Multiple checks for robustness across platforms
+  const isTauri = typeof window !== 'undefined' && (
+    '__TAURI__' in window || 
+    '__TAURI_INTERNALS__' in window ||
+    window.location.protocol === 'tauri:' ||
+    window.location.hostname === 'tauri.localhost'
+  );
+  
+  console.log('signInWithGoogle - isTauri:', isTauri, 'protocol:', window?.location?.protocol, 'hostname:', window?.location?.hostname);
   
   if (isTauri) {
-    // For Tauri apps: open OAuth URL in system browser
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: 'voxwarp://auth/callback',
-        skipBrowserRedirect: true,
-      },
-    });
-    
-    if (error) throw error;
-    
-    if (data?.url) {
-      // Open in system browser using Tauri shell
-      const { open } = await import('@tauri-apps/plugin-shell');
-      await open(data.url);
+    try {
+      // For Tauri apps: open OAuth URL in system browser
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: 'voxwarp://auth/callback',
+          skipBrowserRedirect: true,
+        },
+      });
+      
+      if (error) throw error;
+      
+      if (data?.url) {
+        console.log('Opening OAuth URL in system browser:', data.url);
+        // Open in system browser using Tauri shell
+        const { open } = await import('@tauri-apps/plugin-shell');
+        await open(data.url);
+      }
+      
+      return data;
+    } catch (shellError) {
+      console.error('Failed to open in system browser:', shellError);
+      throw new Error('Google-Login auf diesem Gerät nicht verfügbar. Bitte nutze Email-Login.');
     }
-    
-    return data;
   } else {
     // For web: normal OAuth flow
     const { data, error } = await supabase.auth.signInWithOAuth({

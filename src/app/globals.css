@@ -2,13 +2,154 @@
 @tailwind components;
 @tailwind utilities;
 
-body { color: white; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
-.recording-indicator { animation: pulse 1.5s ease-in-out infinite; }
-@keyframes waveform { 0%,100% { height: 20%; } 50% { height: 100%; } }
-.waveform-bar { animation: waveform 0.5s ease-in-out infinite; }
+:root {
+  --gradient-start: #0f172a;
+  --gradient-mid: #1e293b;
+  --gradient-end: #0f172a;
+  --glow-primary: rgba(14, 165, 233, 0.15);
+  --glow-red: rgba(239, 68, 68, 0.2);
+}
+
+body {
+  color: white;
+  background: linear-gradient(145deg, var(--gradient-start) 0%, var(--gradient-mid) 50%, var(--gradient-end) 100%);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Glassmorphism card */
+.glass-card {
+  background: rgba(30, 41, 59, 0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.glass-card-darker {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+/* Glow effects */
+.glow-primary {
+  box-shadow: 0 0 60px var(--glow-primary), 0 0 100px var(--glow-primary);
+}
+
+.glow-red {
+  box-shadow: 0 0 60px var(--glow-red), 0 0 100px var(--glow-red);
+}
+
+/* Modern button */
+.btn-primary {
+  @apply relative overflow-hidden bg-gradient-to-r from-primary-500 to-primary-600 
+         hover:from-primary-400 hover:to-primary-500
+         text-white font-medium rounded-xl
+         transition-all duration-300 ease-out
+         shadow-lg shadow-primary-500/25 hover:shadow-xl hover:shadow-primary-500/30
+         active:scale-[0.98];
+}
+
+.btn-secondary {
+  @apply bg-slate-800/80 hover:bg-slate-700/80 
+         text-slate-200 font-medium rounded-xl
+         border border-slate-600/50 hover:border-slate-500/50
+         transition-all duration-200 ease-out
+         active:scale-[0.98];
+}
+
+/* Recording button states */
+.recording-btn {
+  @apply relative transition-all duration-500 ease-out transform;
+}
+
+.recording-btn::before {
+  content: '';
+  @apply absolute inset-0 rounded-full opacity-0 transition-opacity duration-300;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+}
+
+.recording-btn:hover::before {
+  @apply opacity-100;
+}
+
+.recording-btn-active {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 30px rgba(239, 68, 68, 0.4), 0 0 60px rgba(239, 68, 68, 0.2);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 50px rgba(239, 68, 68, 0.6), 0 0 100px rgba(239, 68, 68, 0.3);
+    transform: scale(1.02);
+  }
+}
+
+/* Smooth waveform animation */
+@keyframes waveform {
+  0%, 100% { 
+    transform: scaleY(0.3);
+    opacity: 0.6;
+  }
+  50% { 
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.waveform-bar {
+  animation: waveform 0.8s ease-in-out infinite;
+  transform-origin: bottom;
+}
+
+/* Ring pulse animation */
+@keyframes ring-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.ring-pulse {
+  animation: ring-pulse 1.5s ease-out infinite;
+}
+
+/* Shimmer effect for loading */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out;
+}
 
 /* Mobile-friendly touch targets */
-.touch-target { min-width: 44px; min-height: 44px; }
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+}
 
 /* Safe area insets for iOS notch/home indicator */
 .safe-area-inset {
@@ -20,5 +161,38 @@ body { color: white; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100
 
 /* Prevent text selection on touch */
 @media (hover: none) and (pointer: coarse) {
-  button, .touch-target { -webkit-tap-highlight-color: transparent; user-select: none; }
+  button, .touch-target {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+}
+
+/* Progress bar animation */
+@keyframes progress-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.progress-animated {
+  animation: progress-pulse 2s ease-in-out infinite;
+}
+
+/* Subtle hover lift */
+.hover-lift {
+  @apply transition-all duration-200;
+}
+
+.hover-lift:hover {
+  @apply -translate-y-0.5;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Focus ring */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:ring-offset-2 focus:ring-offset-slate-900;
+}
+
+/* Text gradient */
+.text-gradient {
+  @apply bg-gradient-to-r from-primary-400 to-cyan-400 bg-clip-text text-transparent;
 }

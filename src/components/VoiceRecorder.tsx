@@ -65,44 +65,56 @@ function PermissionRationaleModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl">
-        <div className="flex justify-between items-start mb-4">
-          <div className="w-12 h-12 bg-primary-600 rounded-full flex items-center justify-center">
-            <Mic className="w-6 h-6 text-white" />
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+      <div className="glass-card rounded-3xl max-w-md w-full p-6 shadow-elevated-lg animate-slide-up">
+        <div className="flex justify-between items-start mb-6">
+          <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center shadow-glow">
+            <Mic className="w-7 h-7 text-white" />
           </div>
-          <button onClick={onDecline} className="text-slate-400 hover:text-white">
-            <X className="w-5 h-5" />
+          <button 
+            onClick={onDecline} 
+            className="p-2 hover:bg-slate-700/50 rounded-xl transition-colors"
+          >
+            <X className="w-5 h-5 text-slate-400" />
           </button>
         </div>
         
-        <h2 className="text-xl font-semibold text-white mb-2">
+        <h2 className="text-xl font-bold text-white mb-2">
           Microphone Access Required
         </h2>
         
-        <p className="text-slate-300 mb-4">
+        <p className="text-slate-300 mb-6">
           VoxWarp needs access to your microphone to record audio for transcription.
         </p>
         
-        <div className="bg-slate-700/50 rounded-lg p-3 mb-6">
-          <p className="text-sm text-slate-400">
-            <strong className="text-slate-300">How we use your audio:</strong>
-            <br />• Recordings are sent to OpenAI for transcription
-            <br />• Audio is not stored on any server
-            <br />• You control when recording starts and stops
+        <div className="glass-card-darker rounded-xl p-4 mb-6">
+          <p className="text-sm text-slate-400 space-y-1.5">
+            <span className="block text-slate-300 font-medium mb-2">How we use your audio:</span>
+            <span className="flex items-center gap-2">
+              <span className="w-1 h-1 bg-primary-400 rounded-full" />
+              Recordings are sent to OpenAI for transcription
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="w-1 h-1 bg-primary-400 rounded-full" />
+              Audio is not stored on any server
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="w-1 h-1 bg-primary-400 rounded-full" />
+              You control when recording starts and stops
+            </span>
           </p>
         </div>
         
         <div className="flex gap-3">
           <button
             onClick={onDecline}
-            className="flex-1 px-4 py-2.5 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-700 transition-colors"
+            className="btn-secondary flex-1 px-4 py-3"
           >
             Not Now
           </button>
           <button
             onClick={onAccept}
-            className="flex-1 px-4 py-2.5 rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors"
+            className="btn-primary flex-1 px-4 py-3"
           >
             Allow Microphone
           </button>
@@ -241,30 +253,118 @@ export function VoiceRecorder() {
   const isProcessing = isTranscribing || isEnriching;
 
   return (
-    <div className="bg-slate-800 rounded-2xl p-8 shadow-xl">
-      <div className="flex flex-col items-center gap-6">
-        <button onClick={toggleRecording} disabled={isInitializing || isProcessing}
-          className={`relative w-28 h-28 sm:w-32 sm:h-32 rounded-full flex items-center justify-center transition-all duration-300 transform hover:scale-105 active:scale-95 touch-target
-            ${isRecording ? 'bg-red-500 hover:bg-red-600 recording-indicator' : isProcessing ? 'bg-slate-600 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'}
-            disabled:opacity-50 disabled:cursor-not-allowed`}>
-          {isInitializing ? <Loader2 className="w-12 h-12 sm:w-14 sm:h-14 text-white animate-spin" /> : isRecording ? <Square className="w-12 h-12 sm:w-14 sm:h-14 text-white" /> : isProcessing ? <Loader2 className="w-12 h-12 sm:w-14 sm:h-14 text-white animate-spin" /> : <Mic className="w-12 h-12 sm:w-14 sm:h-14 text-white" />}
-          {isRecording && <span className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-25" />}
-        </button>
-        <div className="text-center">
-          {isRecording ? (<div className="space-y-2"><p className="text-lg font-medium text-red-400">Recording...</p><p className="text-3xl font-mono text-white">{formatDuration(recordingDuration)}</p><p className="text-sm text-slate-400">Tap to stop</p></div>)
-          : isTranscribing ? (<div className="space-y-2"><p className="text-lg font-medium text-primary-400">Transcribing...</p><p className="text-sm text-slate-400">Converting speech to text</p></div>)
-          : isEnriching ? (<div className="space-y-2"><p className="text-lg font-medium text-primary-400">Processing with AI...</p><p className="text-sm text-slate-400">Enriching your content</p></div>)
-          : (<div className="space-y-2"><p className="text-lg font-medium text-slate-300">Ready to Record</p><p className="text-sm text-slate-400">Tap the microphone to start</p></div>)}
+    <div className="glass-card rounded-3xl p-8 shadow-elevated animate-fadeIn">
+      <div className="flex flex-col items-center gap-8">
+        {/* Recording Button */}
+        <div className="relative">
+          {/* Outer glow rings */}
+          {isRecording && (
+            <>
+              <span className="absolute inset-0 rounded-full bg-red-500/20 ring-pulse" />
+              <span className="absolute inset-0 rounded-full bg-red-500/10 ring-pulse" style={{ animationDelay: '0.5s' }} />
+            </>
+          )}
+          
+          <button 
+            onClick={toggleRecording} 
+            disabled={isInitializing || isProcessing}
+            className={`
+              recording-btn relative w-32 h-32 sm:w-36 sm:h-36 rounded-full 
+              flex items-center justify-center touch-target
+              transition-all duration-500 ease-out transform 
+              hover:scale-[1.03] active:scale-[0.97]
+              disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
+              focus:outline-none focus:ring-4 focus:ring-offset-4 focus:ring-offset-slate-900
+              ${isRecording 
+                ? 'bg-gradient-to-br from-red-500 to-red-600 recording-btn-active focus:ring-red-500/50' 
+                : isProcessing 
+                  ? 'bg-slate-700' 
+                  : 'bg-gradient-to-br from-primary-500 to-primary-600 shadow-glow hover:shadow-glow-lg focus:ring-primary-500/50'
+              }
+            `}
+          >
+            {/* Inner shine */}
+            <span className="absolute inset-0 rounded-full bg-gradient-to-b from-white/20 to-transparent opacity-60" />
+            
+            {/* Icon */}
+            <span className="relative z-10">
+              {isInitializing ? (
+                <Loader2 className="w-14 h-14 sm:w-16 sm:h-16 text-white animate-spin" />
+              ) : isRecording ? (
+                <Square className="w-12 h-12 sm:w-14 sm:h-14 text-white drop-shadow-lg" />
+              ) : isProcessing ? (
+                <Loader2 className="w-14 h-14 sm:w-16 sm:h-16 text-white/80 animate-spin" />
+              ) : (
+                <Mic className="w-14 h-14 sm:w-16 sm:h-16 text-white drop-shadow-lg" />
+              )}
+            </span>
+          </button>
         </div>
-        {isRecording && (<div className="flex items-end justify-center gap-1 h-12">{[...Array(12)].map((_, i) => (<div key={i} className="w-2 bg-red-400 rounded-full waveform-bar" style={{ animationDelay: `${i * 0.1}s`, height: `${20 + Math.random() * 80}%` }} />))}</div>)}
+
+        {/* Status Text */}
+        <div className="text-center space-y-3">
+          {isRecording ? (
+            <>
+              <p className="text-lg font-semibold text-red-400 tracking-wide">Recording</p>
+              <p className="text-4xl font-mono font-bold text-white tabular-nums tracking-tight">
+                {formatDuration(recordingDuration)}
+              </p>
+              <p className="text-sm text-slate-400">Tap to stop</p>
+            </>
+          ) : isTranscribing ? (
+            <>
+              <p className="text-lg font-semibold text-primary-400">Transcribing</p>
+              <div className="flex items-center justify-center gap-2">
+                <span className="w-2 h-2 bg-primary-400 rounded-full animate-pulse" />
+                <span className="w-2 h-2 bg-primary-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
+                <span className="w-2 h-2 bg-primary-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
+              </div>
+              <p className="text-sm text-slate-400">Converting speech to text</p>
+            </>
+          ) : isEnriching ? (
+            <>
+              <p className="text-lg font-semibold text-gradient">Processing with AI</p>
+              <div className="flex items-center justify-center gap-2">
+                <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
+                <span className="w-2 h-2 bg-primary-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
+                <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
+              </div>
+              <p className="text-sm text-slate-400">Enriching your content</p>
+            </>
+          ) : (
+            <>
+              <p className="text-lg font-semibold text-slate-200">Ready to Record</p>
+              <p className="text-sm text-slate-400">Tap the microphone to start</p>
+            </>
+          )}
+        </div>
+
+        {/* Waveform Visualization */}
+        {isRecording && (
+          <div className="flex items-end justify-center gap-1.5 h-16 px-4">
+            {[...Array(16)].map((_, i) => (
+              <div 
+                key={i} 
+                className="w-1.5 bg-gradient-to-t from-red-500 to-red-400 rounded-full waveform-bar"
+                style={{ 
+                  animationDelay: `${i * 0.08}s`,
+                  height: '100%',
+                }} 
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Permission Denied Warning */}
         {permissionDenied && (
-          <div className="mt-4 p-3 bg-red-900/30 border border-red-700 rounded-lg text-center">
+          <div className="mt-2 p-4 glass-card-darker rounded-xl border-red-500/20 text-center max-w-sm">
             <p className="text-sm text-red-300">
               Microphone access denied. Please enable it in your device settings to use voice recording.
             </p>
           </div>
         )}
       </div>
+      
       <PermissionRationaleModal 
         isOpen={showPermissionModal} 
         onAccept={handlePermissionAccept} 

@@ -15,15 +15,30 @@ export function useDeepLink() {
 
     const handleDeepLink = async () => {
       try {
-        const { onOpenUrl } = await import('@tauri-apps/plugin-deep-link');
+        const { onOpenUrl, getCurrent } = await import('@tauri-apps/plugin-deep-link');
         
-        // Listen for deep link events
+        // Check if app was launched via deep link (initial URL)
+        try {
+          const initialUrls = await getCurrent();
+          if (initialUrls && initialUrls.length > 0) {
+            console.log('App launched with deep link:', initialUrls);
+            for (const url of initialUrls) {
+              if (url.startsWith('voxwarp://callback')) {
+                await handleAuthCallback(url);
+              }
+            }
+          }
+        } catch (e) {
+          console.log('No initial deep link URL');
+        }
+        
+        // Listen for deep link events while app is running
         const unlisten = await onOpenUrl(async (urls) => {
           for (const url of urls) {
             console.log('Deep link received:', url);
             
-            // Check if it's an auth callback
-            if (url.startsWith('voxwarp://auth/callback')) {
+            // Check if it's an auth callback (voxwarp://callback#access_token=...)
+            if (url.startsWith('voxwarp://callback')) {
               await handleAuthCallback(url);
             }
           }
@@ -45,8 +60,10 @@ export function useDeepLink() {
 
   const handleAuthCallback = async (url: string) => {
     try {
+      console.log('Processing auth callback:', url);
+      
       // Parse the URL to extract tokens
-      // The URL format from Supabase is: voxwarp://auth/callback#access_token=...&refresh_token=...
+      // The URL format from Supabase is: voxwarp://callback#access_token=...&refresh_token=...
       const hashIndex = url.indexOf('#');
       if (hashIndex === -1) {
         console.error('No hash fragment in callback URL');

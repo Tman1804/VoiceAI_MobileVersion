@@ -22,7 +22,6 @@ export function ResultsDisplay() {
   };
 
   const handleShare = async (text: string) => {
-    // Try Web Share API first (works on mobile browsers and some desktop)
     if (navigator.share) {
       try {
         await navigator.share({ title: 'VoxWarp', text: text });
@@ -31,11 +30,8 @@ export function ResultsDisplay() {
         return;
       } catch (error) {
         if ((error as Error).name === 'AbortError') return;
-        // Share failed, fall through to clipboard
       }
     }
-
-    // Fallback: copy to clipboard
     try {
       await navigator.clipboard.writeText(text);
       setShareStatus('copied');
@@ -58,44 +54,95 @@ export function ResultsDisplay() {
   const displayContent = activeTab === 'transcription' ? transcription : enrichedContent;
 
   return (
-    <div className="bg-slate-800 rounded-2xl shadow-xl overflow-hidden">
-      <div className="flex border-b border-slate-700">
-        <button onClick={() => setActiveTab('transcription')} className={`flex-1 px-4 py-3 flex items-center justify-center gap-2 transition-colors ${activeTab === 'transcription' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700/50'}`}>
-          <FileText className="w-4 h-4" /><span>Transcription</span>
+    <div className="glass-card rounded-3xl shadow-elevated overflow-hidden animate-fadeIn">
+      {/* Tab Switcher */}
+      <div className="flex p-1.5 m-3 gap-1 glass-card-darker rounded-xl">
+        <button 
+          onClick={() => setActiveTab('transcription')} 
+          className={`flex-1 px-4 py-2.5 flex items-center justify-center gap-2 rounded-lg transition-all duration-200 text-sm font-medium ${
+            activeTab === 'transcription' 
+              ? 'bg-slate-700/80 text-white shadow-inner-glow' 
+              : 'text-slate-400 hover:text-white hover:bg-slate-700/30'
+          }`}
+        >
+          <FileText className="w-4 h-4" />
+          <span>Transcription</span>
         </button>
-        <button onClick={() => setActiveTab('enriched')} className={`flex-1 px-4 py-3 flex items-center justify-center gap-2 transition-colors ${activeTab === 'enriched' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700/50'}`}>
-          <Sparkles className="w-4 h-4" /><span>{getEnrichmentModeLabel(settings.enrichmentMode)}</span>
+        <button 
+          onClick={() => setActiveTab('enriched')} 
+          className={`flex-1 px-4 py-2.5 flex items-center justify-center gap-2 rounded-lg transition-all duration-200 text-sm font-medium ${
+            activeTab === 'enriched' 
+              ? 'bg-slate-700/80 text-white shadow-inner-glow' 
+              : 'text-slate-400 hover:text-white hover:bg-slate-700/30'
+          }`}
+        >
+          <Sparkles className="w-4 h-4" />
+          <span>{getEnrichmentModeLabel(settings.enrichmentMode)}</span>
         </button>
       </div>
-      <div className="p-6">
+
+      <div className="p-5 pt-2">
         {displayContent ? (
           <div className="space-y-4">
+            {/* Action Buttons */}
             <div className="flex flex-wrap items-center justify-end gap-2">
               {activeTab === 'enriched' && transcription && (
-                <button onClick={handleReEnrich} disabled={isEnriching} className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors disabled:opacity-50 touch-target">
-                  <RefreshCw className={`w-4 h-4 ${isEnriching ? 'animate-spin' : ''}`} /><span>Redo</span>
+                <button 
+                  onClick={handleReEnrich} 
+                  disabled={isEnriching} 
+                  className="btn-secondary flex items-center justify-center gap-1.5 px-3 py-2 text-sm touch-target disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isEnriching ? 'animate-spin' : ''}`} />
+                  <span>Redo</span>
                 </button>
               )}
-              <button onClick={() => handleShare(displayContent)} className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors touch-target">
-                {shareStatus === 'shared' ? (<><Check className="w-4 h-4" /><span>Shared</span></>) : 
-                 shareStatus === 'copied' ? (<><Check className="w-4 h-4" /><span>Copied</span></>) : 
-                 (<><Share2 className="w-4 h-4" /><span>Share</span></>)}
+              <button 
+                onClick={() => handleShare(displayContent)} 
+                className="btn-primary flex items-center justify-center gap-1.5 px-3 py-2 text-sm touch-target"
+              >
+                {shareStatus === 'shared' ? (
+                  <><Check className="w-4 h-4" /><span>Shared</span></>
+                ) : shareStatus === 'copied' ? (
+                  <><Check className="w-4 h-4" /><span>Copied</span></>
+                ) : (
+                  <><Share2 className="w-4 h-4" /><span>Share</span></>
+                )}
               </button>
-              <button onClick={() => handleCopy(displayContent, activeTab)} className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors touch-target">
-                {copiedField === activeTab ? (<><Check className="w-4 h-4 text-green-400" /><span>Copied</span></>) : (<><Copy className="w-4 h-4" /><span>Copy</span></>)}
+              <button 
+                onClick={() => handleCopy(displayContent, activeTab)} 
+                className="btn-secondary flex items-center justify-center gap-1.5 px-3 py-2 text-sm touch-target"
+              >
+                {copiedField === activeTab ? (
+                  <><Check className="w-4 h-4 text-green-400" /><span>Copied</span></>
+                ) : (
+                  <><Copy className="w-4 h-4" /><span>Copy</span></>
+                )}
               </button>
             </div>
-            <div className="bg-slate-900 rounded-lg p-4 max-h-96 overflow-y-auto">
-              <pre className="whitespace-pre-wrap text-slate-200 text-sm font-sans leading-relaxed">{displayContent}</pre>
+
+            {/* Content Display */}
+            <div className="glass-card-darker rounded-2xl p-4 max-h-96 overflow-y-auto">
+              <pre className="whitespace-pre-wrap text-slate-200 text-sm font-sans leading-relaxed">
+                {displayContent}
+              </pre>
             </div>
           </div>
         ) : (
-          <div className="text-center py-8 text-slate-400">
+          <div className="text-center py-10 text-slate-400">
             {activeTab === 'enriched' && transcription ? (
-              <div className="space-y-4"><p>No enriched content yet.</p>
-                <button onClick={handleReEnrich} disabled={isEnriching} className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors disabled:opacity-50">{isEnriching ? 'Processing...' : 'Process with AI'}</button>
+              <div className="space-y-4">
+                <p className="text-sm">No enriched content yet.</p>
+                <button 
+                  onClick={handleReEnrich} 
+                  disabled={isEnriching} 
+                  className="btn-primary px-5 py-2.5 text-sm disabled:opacity-50"
+                >
+                  {isEnriching ? 'Processing...' : 'Process with AI'}
+                </button>
               </div>
-            ) : (<p>Record a voice note to see results here.</p>)}
+            ) : (
+              <p className="text-sm">Record a voice note to see results here.</p>
+            )}
           </div>
         )}
       </div>

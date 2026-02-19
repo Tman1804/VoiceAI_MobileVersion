@@ -40,35 +40,41 @@ export function UsageDisplay() {
   };
 
   return (
-    <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-700">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <Zap className={`w-4 h-4 ${isLow && !isUnlimited ? 'text-amber-400' : 'text-primary-400'}`} />
-          <span className="text-sm font-medium text-white">
+    <div className="glass-card rounded-2xl p-4">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2.5">
+          <div className={`p-2 rounded-xl ${isLow && !isUnlimited ? 'bg-amber-500/20' : 'bg-primary-500/20'}`}>
+            <Zap className={`w-4 h-4 ${isLow && !isUnlimited ? 'text-amber-400' : 'text-primary-400'}`} />
+          </div>
+          <span className="text-sm font-semibold text-white">
             {planLabels[usage.plan]}
           </span>
         </div>
-        <span className="text-xs text-slate-500">
-          {isUnlimited ? '∞' : `${remaining.toLocaleString()} übrig`}
+        <span className="text-xs font-medium text-slate-400">
+          {isUnlimited ? '∞ Tokens' : `${remaining.toLocaleString()} übrig`}
         </span>
       </div>
       
       {!isUnlimited && (
         <>
-          <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+          <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
             <div 
-              className={`h-full transition-all ${isLow ? 'bg-amber-500' : 'bg-primary-500'}`}
+              className={`h-full rounded-full transition-all duration-500 ${
+                isLow 
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500' 
+                  : 'bg-gradient-to-r from-primary-500 to-cyan-400'
+              }`}
               style={{ width: `${percentage}%` }}
             />
           </div>
-          <p className="mt-1.5 text-xs text-slate-500">
-            {usage.tokens_used.toLocaleString()} / {usage.tokens_limit.toLocaleString()} Tokens
+          <p className="mt-2 text-xs text-slate-500">
+            {usage.tokens_used.toLocaleString()} / {usage.tokens_limit.toLocaleString()} Tokens verwendet
           </p>
         </>
       )}
 
       {isLow && !isUnlimited && (
-        <button className="mt-2 w-full flex items-center justify-center gap-1.5 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors">
+        <button className="mt-3 w-full btn-primary py-2.5 flex items-center justify-center gap-2 text-sm">
           <TrendingUp className="w-4 h-4" />
           Upgrade
         </button>

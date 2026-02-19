@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, Mic } from 'lucide-react';
-import { signIn, signUp, signInWithGoogle } from '@/lib/supabase';
+import { signIn, signUp, signInWithGoogle, supabase } from '@/lib/supabase';
+import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 
 interface AuthScreenProps {
   onSuccess: () => void;
@@ -17,6 +18,27 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [googleLoading, setGoogleLoading] = useState(false);
+
+  // Listen for auth state changes (e.g., from OAuth callback via deep link)
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
+      console.log('Auth state changed:', event, session?.user?.email);
+      
+      if (event === 'SIGNED_IN' && session) {
+        // User successfully signed in - trigger success callback
+        setGoogleLoading(false);
+        onSuccess();
+      }
+      
+      if (event === 'TOKEN_REFRESHED') {
+        setGoogleLoading(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [onSuccess]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,67 +75,80 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center p-4 safe-area-inset">
+      <div className="w-full max-w-md animate-fadeIn">
         {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-600 rounded-2xl mb-4">
-            <Mic className="w-8 h-8 text-white" />
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-600 rounded-3xl mb-5 shadow-glow">
+            <Mic className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white">VoxWarp</h1>
-          <p className="text-slate-400 mt-1">Sprache zu Text mit KI</p>
+          <h1 className="text-3xl font-bold text-white tracking-tight">VoxWarp</h1>
+          <p className="text-slate-400 mt-2">Sprache zu Text mit KI</p>
         </div>
 
         {/* Auth Card */}
-        <div className="bg-slate-800 rounded-2xl p-6 shadow-xl">
-          <div className="flex gap-2 p-1 bg-slate-900 rounded-lg mb-6">
+        <div className="glass-card rounded-3xl p-6 shadow-elevated">
+          {/* Tab Switcher */}
+          <div className="flex gap-1 p-1 glass-card-darker rounded-xl mb-6">
             <button
               onClick={() => { setIsLogin(true); setError(null); }}
-              className={`flex-1 py-2.5 text-sm font-medium rounded-md transition-colors ${isLogin ? 'bg-primary-600 text-white' : 'text-slate-400 hover:text-white'}`}
+              className={`flex-1 py-3 text-sm font-semibold rounded-lg transition-all duration-300 ${
+                isLogin 
+                  ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg' 
+                  : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+              }`}
             >
               Anmelden
             </button>
             <button
               onClick={() => { setIsLogin(false); setError(null); }}
-              className={`flex-1 py-2.5 text-sm font-medium rounded-md transition-colors ${!isLogin ? 'bg-primary-600 text-white' : 'text-slate-400 hover:text-white'}`}
+              className={`flex-1 py-3 text-sm font-semibold rounded-lg transition-all duration-300 ${
+                !isLogin 
+                  ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg' 
+                  : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+              }`}
             >
               Registrieren
             </button>
           </div>
 
+          {/* Error Message */}
           {error && (
-            <div className="mb-4 p-3 bg-red-900/50 border border-red-700 rounded-lg flex items-start gap-2">
+            <div className="mb-5 p-4 glass-card-darker rounded-xl border border-red-500/30 flex items-start gap-3 animate-fadeIn">
               <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-red-200">{error}</p>
             </div>
           )}
 
+          {/* Success Message */}
           {success && (
-            <div className="mb-4 p-3 bg-green-900/50 border border-green-700 rounded-lg">
+            <div className="mb-5 p-4 glass-card-darker rounded-xl border border-green-500/30 animate-fadeIn">
               <p className="text-sm text-green-200">{success}</p>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Email Input */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-slate-300">E-Mail</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+              <div className="relative group">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 transition-colors group-focus-within:text-primary-400" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@beispiel.de"
                   required
-                  className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full pl-12 pr-4 py-3.5 glass-card-darker border border-slate-700/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all"
                 />
               </div>
             </div>
 
+            {/* Password Input */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-slate-300">Passwort</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+              <div className="relative group">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 transition-colors group-focus-within:text-primary-400" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
@@ -121,22 +156,23 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
                   placeholder="••••••••"
                   required
                   minLength={6}
-                  className="w-full pl-11 pr-12 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full pl-12 pr-12 py-3.5 glass-card-darker border border-slate-700/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors p-1"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
 
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-800 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+              className="btn-primary w-full py-3.5 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading && <Loader2 className="w-5 h-5 animate-spin" />}
               {isLogin ? 'Anmelden' : 'Konto erstellen'}
@@ -146,10 +182,10 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
           {/* Divider */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-700"></div>
+              <div className="w-full border-t border-slate-700/50"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-3 bg-slate-800 text-slate-500">oder</span>
+              <span className="px-4 glass-card text-slate-500 rounded-full">oder</span>
             </div>
           </div>
 
@@ -157,10 +193,10 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
           <button
             onClick={handleGoogleSignIn}
             disabled={googleLoading}
-            className="w-full py-3 bg-white hover:bg-gray-100 disabled:bg-gray-200 disabled:cursor-not-allowed text-gray-800 font-medium rounded-lg transition-colors flex items-center justify-center gap-3"
+            className="w-full py-3.5 bg-white hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-800 font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl active:scale-[0.98]"
           >
             {googleLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="w-5 h-5 animate-spin text-gray-600" />
             ) : (
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -174,15 +210,22 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
 
           {/* Trial info */}
           {!isLogin && (
-            <p className="mt-4 text-center text-sm text-slate-500">
-              🎁 Nach der Registrierung erhältst du <span className="text-primary-400">2.500 Tokens</span> kostenlos zum Testen!
-            </p>
+            <div className="mt-5 text-center p-3 glass-card-darker rounded-xl">
+              <p className="text-sm text-slate-400">
+                🎁 Nach der Registrierung erhältst du{' '}
+                <span className="text-gradient font-semibold">2.500 Tokens</span>{' '}
+                kostenlos!
+              </p>
+            </div>
           )}
         </div>
 
         {/* Footer */}
-        <p className="mt-6 text-center text-xs text-slate-600">
-          Mit der Anmeldung akzeptierst du unsere Nutzungsbedingungen und Datenschutzerklärung.
+        <p className="mt-8 text-center text-xs text-slate-500">
+          Mit der Anmeldung akzeptierst du unsere{' '}
+          <span className="text-slate-400 hover:text-white cursor-pointer transition-colors">Nutzungsbedingungen</span>{' '}
+          und{' '}
+          <span className="text-slate-400 hover:text-white cursor-pointer transition-colors">Datenschutzerklärung</span>.
         </p>
       </div>
     </div>

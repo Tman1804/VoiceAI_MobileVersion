@@ -42,6 +42,14 @@
   "plugins": {
     "shell": {
       "open": true
+    },
+    "deep-link": {
+      "mobile": [
+        { "host": "auth", "pathPrefix": "/callback" }
+      ],
+      "desktop": {
+        "schemes": ["voxwarp"]
+      }
     }
   }
 }

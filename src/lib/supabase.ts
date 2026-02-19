@@ -29,14 +29,39 @@ export async function signIn(email: string, password: string) {
 }
 
 export async function signInWithGoogle() {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined,
-    },
-  });
-  if (error) throw error;
-  return data;
+  // Check if running in Tauri (mobile/desktop app)
+  const isTauri = typeof window !== 'undefined' && '__TAURI__' in window;
+  
+  if (isTauri) {
+    // For Tauri apps: open OAuth URL in system browser
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: 'voxwarp://auth/callback',
+        skipBrowserRedirect: true,
+      },
+    });
+    
+    if (error) throw error;
+    
+    if (data?.url) {
+      // Open in system browser using Tauri shell
+      const { open } = await import('@tauri-apps/plugin-shell');
+      await open(data.url);
+    }
+    
+    return data;
+  } else {
+    // For web: normal OAuth flow
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined,
+      },
+    });
+    if (error) throw error;
+    return data;
+  }
 }
 
 export async function signOut() {

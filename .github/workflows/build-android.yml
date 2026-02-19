@@ -68,6 +68,15 @@ jobs:
           echo "Updated AndroidManifest.xml:"
           cat "$MANIFEST_PATH"
 
+      - name: Add Deep Link intent filter for OAuth
+        run: |
+          MANIFEST_PATH="src-tauri/gen/android/app/src/main/AndroidManifest.xml"
+          # Add intent filter for voxwarp:// deep links inside the main activity
+          INTENT_FILTER='<intent-filter android:autoVerify="true">\n                <action android:name="android.intent.action.VIEW" />\n                <category android:name="android.intent.category.DEFAULT" />\n                <category android:name="android.intent.category.BROWSABLE" />\n                <data android:scheme="voxwarp" android:host="auth" android:pathPrefix="/callback" />\n            </intent-filter>'
+          sed -i "s|</activity>|            $INTENT_FILTER\n        </activity>|" "$MANIFEST_PATH"
+          echo "Added deep link intent filter"
+          cat "$MANIFEST_PATH"
+
       - name: Configure Gradle for Play Store requirements
         run: |
           GRADLE_FILE="src-tauri/gen/android/app/build.gradle.kts"

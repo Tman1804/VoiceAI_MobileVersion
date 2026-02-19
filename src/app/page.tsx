@@ -11,6 +11,7 @@ import { UsageDisplay } from '@/components/UsageDisplay';
 import { useAppStore, EnrichmentMode } from '@/store/appStore';
 import { useAuthStore } from '@/store/authStore';
 import { useTauriIntegration } from '@/hooks/useTauriIntegration';
+import { useDeepLink } from '@/hooks/useDeepLink';
 import { Settings, Mic, X, AlertCircle, ChevronDown, Clock, LogOut, Loader2 } from 'lucide-react';
 import { getEnrichmentModeLabel } from '@/lib/enrichmentService';
 
@@ -21,6 +22,9 @@ export default function Home() {
   const { user, loading: authLoading, initialized, initialize, logout } = useAuthStore();
   const { isMobile } = useTauriIntegration();
   const [showModeDropdown, setShowModeDropdown] = useState(false);
+  
+  // Handle deep links for OAuth callback
+  useDeepLink();
 
   // Initialize auth on mount
   useEffect(() => {

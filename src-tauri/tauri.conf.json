@@ -45,7 +45,7 @@
     },
     "deep-link": {
       "mobile": [
-        { "host": "auth", "pathPrefix": ["/callback"] }
+        { "scheme": ["voxwarp"] }
       ],
       "desktop": {
         "schemes": ["voxwarp"]

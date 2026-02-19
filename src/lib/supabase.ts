@@ -30,25 +30,22 @@ export async function signIn(email: string, password: string) {
 
 export async function signInWithGoogle() {
   // Detect if running in Tauri environment
-  // On Android, the app runs at http://tauri.localhost or similar
   const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-  const protocol = typeof window !== 'undefined' ? window.location.protocol : '';
   const hasTauriGlobal = typeof window !== 'undefined' && ('__TAURI__' in window || '__TAURI_INTERNALS__' in window);
-  const isTauriUrl = hostname.includes('tauri') || hostname.includes('localhost') || protocol === 'tauri:';
+  const isTauriUrl = hostname.includes('tauri') || hostname.includes('localhost');
   const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
   
-  // Consider it Tauri if we have the global OR if it's Android with localhost URLs
   const isTauri = hasTauriGlobal || (isAndroid && isTauriUrl);
   
-  console.log('OAuth Debug:', { hostname, protocol, hasTauriGlobal, isTauriUrl, isAndroid, isTauri });
+  console.log('OAuth Debug:', { hostname, hasTauriGlobal, isTauriUrl, isAndroid, isTauri });
   
   if (isTauri) {
     try {
-      // For Tauri/Android apps: get OAuth URL and open in system browser
+      // For Tauri/Android apps: get OAuth URL and open in external browser
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: 'voxwarp://auth/callback',
+          redirectTo: 'voxwarp://callback',
           skipBrowserRedirect: true,
         },
       });
@@ -56,10 +53,10 @@ export async function signInWithGoogle() {
       if (error) throw error;
       
       if (data?.url) {
-        console.log('Opening OAuth URL in system browser:', data.url);
-        // Open in system browser using Tauri shell plugin
-        const { open } = await import('@tauri-apps/plugin-shell');
-        await open(data.url);
+        console.log('Opening OAuth URL with opener plugin:', data.url);
+        // Use opener plugin to open URL in external browser (not WebView!)
+        const { openUrl } = await import('@tauri-apps/plugin-opener');
+        await openUrl(data.url);
       }
       
       return data;

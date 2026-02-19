@@ -45,6 +45,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Run tests
+        run: npm test
+        continue-on-error: false
+
       - name: Install Tauri CLI
         run: npm install -g @tauri-apps/cli@^2.0.0
 

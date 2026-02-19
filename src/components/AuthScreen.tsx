@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, Mic } from 'lucide-react';
 import { signIn, signUp, signInWithGoogle, supabase } from '@/lib/supabase';
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
@@ -18,6 +18,20 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [googleLoading, setGoogleLoading] = useState(false);
+
+  // Check for existing session (fallback for OAuth)
+  const checkSession = useCallback(async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Session check:', session?.user?.email || 'no session');
+      if (session) {
+        setGoogleLoading(false);
+        onSuccess();
+      }
+    } catch (e) {
+      console.error('Session check failed:', e);
+    }
+  }, [onSuccess]);
 
   // Listen for auth state changes (e.g., from OAuth callback via deep link)
   useEffect(() => {
@@ -39,6 +53,55 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
       subscription.unsubscribe();
     };
   }, [onSuccess]);
+
+  // Fallback: Check session when app comes back into focus (after OAuth in external browser)
+  useEffect(() => {
+    // Check on visibility change (user returning from browser)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && googleLoading) {
+        console.log('App became visible, checking session...');
+        checkSession();
+      }
+    };
+
+    // Check on window focus (alternative trigger)
+    const handleFocus = () => {
+      if (googleLoading) {
+        console.log('Window focused, checking session...');
+        checkSession();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [googleLoading, checkSession]);
+
+  // Also poll periodically while googleLoading is true (last resort fallback)
+  useEffect(() => {
+    if (!googleLoading) return;
+
+    const pollInterval = setInterval(() => {
+      console.log('Polling for session...');
+      checkSession();
+    }, 2000); // Check every 2 seconds
+
+    // Stop polling after 60 seconds
+    const timeout = setTimeout(() => {
+      clearInterval(pollInterval);
+      setGoogleLoading(false);
+      setError('Google-Login Timeout. Bitte versuche es erneut.');
+    }, 60000);
+
+    return () => {
+      clearInterval(pollInterval);
+      clearTimeout(timeout);
+    };
+  }, [googleLoading, checkSession]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

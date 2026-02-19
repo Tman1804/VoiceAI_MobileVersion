@@ -29,20 +29,22 @@ export async function signIn(email: string, password: string) {
 }
 
 export async function signInWithGoogle() {
-  // Check if running in Tauri (mobile/desktop app)
-  // Multiple checks for robustness across platforms
-  const isTauri = typeof window !== 'undefined' && (
-    '__TAURI__' in window || 
-    '__TAURI_INTERNALS__' in window ||
-    window.location.protocol === 'tauri:' ||
-    window.location.hostname === 'tauri.localhost'
-  );
+  // Detect if running in Tauri environment
+  // On Android, the app runs at http://tauri.localhost or similar
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+  const protocol = typeof window !== 'undefined' ? window.location.protocol : '';
+  const hasTauriGlobal = typeof window !== 'undefined' && ('__TAURI__' in window || '__TAURI_INTERNALS__' in window);
+  const isTauriUrl = hostname.includes('tauri') || hostname.includes('localhost') || protocol === 'tauri:';
+  const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
   
-  console.log('signInWithGoogle - isTauri:', isTauri, 'protocol:', window?.location?.protocol, 'hostname:', window?.location?.hostname);
+  // Consider it Tauri if we have the global OR if it's Android with localhost URLs
+  const isTauri = hasTauriGlobal || (isAndroid && isTauriUrl);
+  
+  console.log('OAuth Debug:', { hostname, protocol, hasTauriGlobal, isTauriUrl, isAndroid, isTauri });
   
   if (isTauri) {
     try {
-      // For Tauri apps: open OAuth URL in system browser
+      // For Tauri/Android apps: get OAuth URL and open in system browser
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -55,18 +57,18 @@ export async function signInWithGoogle() {
       
       if (data?.url) {
         console.log('Opening OAuth URL in system browser:', data.url);
-        // Open in system browser using Tauri shell
+        // Open in system browser using Tauri shell plugin
         const { open } = await import('@tauri-apps/plugin-shell');
         await open(data.url);
       }
       
       return data;
-    } catch (shellError) {
-      console.error('Failed to open in system browser:', shellError);
-      throw new Error('Google-Login auf diesem Gerät nicht verfügbar. Bitte nutze Email-Login.');
+    } catch (err) {
+      console.error('OAuth error:', err);
+      throw new Error('Google-Login fehlgeschlagen. Bitte nutze Email-Login.');
     }
   } else {
-    // For web: normal OAuth flow
+    // For web browser: normal OAuth flow
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {

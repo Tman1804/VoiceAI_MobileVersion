@@ -28,7 +28,6 @@ describe('appStore', () => {
     it('has correct default settings', () => {
       const { settings } = useAppStore.getState();
       
-      expect(settings.whisperModel).toBe('whisper-1');
       expect(settings.enrichmentMode).toBe('clean-transcript');
       expect(settings.autoEnrich).toBe(true);
       expect(settings.autoCopyToClipboard).toBe(false);

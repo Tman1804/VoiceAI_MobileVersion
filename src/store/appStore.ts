@@ -16,14 +16,11 @@ export interface Recording {
 }
 
 interface Settings {
-  openAiApiKey: string;
-  whisperModel: 'whisper-1';
   enrichmentMode: EnrichmentMode;
   customPrompt: string;
   autoEnrich: boolean;
   autoCopyToClipboard: boolean;
   outputLanguage: OutputLanguage;
-  translateToEnglish: boolean;
 }
 
 type ViewMode = 'recording' | 'settings' | 'history' | 'history-detail';
@@ -60,14 +57,11 @@ interface AppState {
 }
 
 const defaultSettings: Settings = {
-  openAiApiKey: '',
-  whisperModel: 'whisper-1',
   enrichmentMode: 'clean-transcript',
   customPrompt: '',
   autoEnrich: true,
   autoCopyToClipboard: false,
   outputLanguage: 'auto',
-  translateToEnglish: false,
 };
 
 export const useAppStore = create<AppState>()(

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Eye, EyeOff, Save, ArrowLeft, ChevronRight, FileText, Shield } from 'lucide-react';
+import { Save, ArrowLeft, ChevronRight, FileText, Shield } from 'lucide-react';
 import { useAppStore, OutputLanguage } from '@/store/appStore';
 import { getLanguageLabel } from '@/lib/enrichmentService';
 import { LegalModal } from './LegalModal';
@@ -10,7 +10,6 @@ const OUTPUT_LANGUAGES: OutputLanguage[] = ['auto', 'de', 'en', 'fr', 'es', 'it'
 
 export function SettingsPanel() {
   const { settings, updateSettings, setShowSettings } = useAppStore();
-  const [showApiKey, setShowApiKey] = useState(false);
   const [localSettings, setLocalSettings] = useState(settings);
   const [saved, setSaved] = useState(false);
   const [legalModal, setLegalModal] = useState<'privacy' | 'terms' | null>(null);
@@ -27,36 +26,13 @@ export function SettingsPanel() {
         <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-slate-700 rounded-lg transition-colors">
           <ArrowLeft className="w-5 h-5 text-slate-400" />
         </button>
-        <h2 className="text-xl font-semibold text-white">Settings</h2>
+        <h2 className="text-xl font-semibold text-white">Einstellungen</h2>
       </div>
 
       <div className="space-y-5">
-        {/* API Key */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-300">OpenAI API Key</label>
-          <div className="relative">
-            <input 
-              type={showApiKey ? 'text' : 'password'} 
-              value={localSettings.openAiApiKey}
-              onChange={(e) => setLocalSettings({ ...localSettings, openAiApiKey: e.target.value })} 
-              placeholder="sk-..."
-              className="w-full px-4 py-2.5 pr-12 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500" 
-            />
-            <button type="button" onClick={() => setShowApiKey(!showApiKey)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white">
-              {showApiKey ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-            </button>
-          </div>
-          <p className="text-xs text-slate-500">
-            Get your API key from{' '}
-            <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-primary-400 hover:underline">
-              OpenAI Platform
-            </a>
-          </p>
-        </div>
-
         {/* Output Language */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-300">Output Language</label>
+          <label className="block text-sm font-medium text-slate-300">Ausgabesprache</label>
           <select 
             value={localSettings.outputLanguage}
             onChange={(e) => setLocalSettings({ ...localSettings, outputLanguage: e.target.value as OutputLanguage })}
@@ -71,7 +47,7 @@ export function SettingsPanel() {
         {/* Toggles */}
         <div className="space-y-3 py-2">
           <label className="flex items-center justify-between cursor-pointer py-2">
-            <span className="text-white">Auto-process after recording</span>
+            <span className="text-white">Automatisch verarbeiten</span>
             <div 
               className={`relative w-11 h-6 rounded-full transition-colors ${localSettings.autoEnrich ? 'bg-primary-600' : 'bg-slate-700'}`}
               onClick={() => setLocalSettings({ ...localSettings, autoEnrich: !localSettings.autoEnrich })}
@@ -81,7 +57,7 @@ export function SettingsPanel() {
           </label>
           
           <label className="flex items-center justify-between cursor-pointer py-2">
-            <span className="text-white">Auto-copy to clipboard</span>
+            <span className="text-white">Automatisch kopieren</span>
             <div 
               className={`relative w-11 h-6 rounded-full transition-colors ${localSettings.autoCopyToClipboard ? 'bg-primary-600' : 'bg-slate-700'}`}
               onClick={() => setLocalSettings({ ...localSettings, autoCopyToClipboard: !localSettings.autoCopyToClipboard })}
@@ -97,7 +73,7 @@ export function SettingsPanel() {
           className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-colors ${saved ? 'bg-green-600 text-white' : 'bg-primary-600 hover:bg-primary-700 text-white'}`}
         >
           <Save className="w-5 h-5" />
-          {saved ? 'Saved!' : 'Save Settings'}
+          {saved ? 'Gespeichert!' : 'Speichern'}
         </button>
 
         {/* Divider */}

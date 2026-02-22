@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Mic, Square, Loader2, X } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
+import { useAuthStore } from '@/store/authStore';
 import { AudioRecorder } from '@/lib/audioRecorder';
 import { transcribeAudio } from '@/lib/transcriptionService';
-import { enrichTranscript } from '@/lib/enrichmentService';
 
 // Haptic feedback for mobile
 const triggerHaptic = (type: 'start' | 'stop') => {
@@ -133,6 +133,7 @@ export function VoiceRecorder() {
   const [permissionDenied, setPermissionDenied] = useState(false);
 
   const { isRecording, setIsRecording, recordingDuration, setRecordingDuration, setAudioBlob, isTranscribing, setIsTranscribing, isEnriching, setIsEnriching, setTranscription, setEnrichedContent, setError, settings, addRecording } = useAppStore();
+  const { refreshUsage } = useAuthStore();
 
   const processAudio = useCallback(async (blob: Blob) => {
     const finalDuration = durationRef.current;
@@ -142,25 +143,27 @@ export function VoiceRecorder() {
     let transcript = '';
     let enriched = '';
     try {
-      transcript = await transcribeAudio(
-        blob, 
-        settings.openAiApiKey, 
-        settings.outputLanguage, 
-        settings.translateToEnglish
+      // Call Edge Function which does transcription + enrichment in one call
+      const result = await transcribeAudio(
+        blob,
+        settings.outputLanguage,
+        settings.autoEnrich ? settings.enrichmentMode : 'clean-transcript'
       );
+      
+      transcript = result.transcription;
+      enriched = result.enrichedContent;
+      
       setTranscription(transcript);
-      if (settings.autoEnrich && transcript) {
-        setIsEnriching(true);
-        enriched = await enrichTranscript(
-          transcript, 
-          settings.openAiApiKey, 
-          settings.enrichmentMode, 
-          settings.customPrompt,
-          settings.outputLanguage
-        );
+      if (enriched) {
         setEnrichedContent(enriched);
         if (settings.autoCopyToClipboard) await navigator.clipboard.writeText(enriched);
+      } else if (settings.autoCopyToClipboard && transcript) {
+        await navigator.clipboard.writeText(transcript);
       }
+      
+      // Refresh usage after transcription
+      await refreshUsage();
+      
       // Auto-save to history
       if (transcript) {
         addRecording({
@@ -172,9 +175,9 @@ export function VoiceRecorder() {
           language: settings.outputLanguage
         });
       }
-    } catch (error: any) { setError(error.message || 'An error occurred'); }
+    } catch (error: any) { setError(error.message || 'Ein Fehler ist aufgetreten'); }
     finally { setIsTranscribing(false); setIsEnriching(false); }
-  }, [settings, setAudioBlob, setIsTranscribing, setError, setTranscription, setIsEnriching, setEnrichedContent, addRecording]);
+  }, [settings, setAudioBlob, setIsTranscribing, setError, setTranscription, setIsEnriching, setEnrichedContent, addRecording, refreshUsage]);
 
   const doStartRecording = useCallback(async () => {
     try {

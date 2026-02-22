@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Copy, Check, FileText, Sparkles, RefreshCw, Share2 } from 'lucide-react';
+import { Copy, Check, FileText, Sparkles, Share2, RefreshCw } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
+import { useAuthStore } from '@/store/authStore';
 import { enrichTranscript, getEnrichmentModeLabel } from '@/lib/enrichmentService';
 
 export function ResultsDisplay() {
   const { transcription, enrichedContent, settings, isEnriching, setIsEnriching, setEnrichedContent, setError } = useAppStore();
+  const { refreshUsage } = useAuthStore();
   const [activeTab, setActiveTab] = useState<'transcription' | 'enriched'>('enriched');
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [shareStatus, setShareStatus] = useState<'idle' | 'shared' | 'copied'>('idle');
@@ -43,11 +45,15 @@ export function ResultsDisplay() {
 
   const handleReEnrich = async () => {
     if (!transcription || isEnriching) return;
-    setIsEnriching(true); setError(null);
+    setIsEnriching(true); 
+    setError(null);
     try {
-      const enriched = await enrichTranscript(transcription, settings.openAiApiKey, settings.enrichmentMode, settings.customPrompt);
-      setEnrichedContent(enriched);
-    } catch (error: any) { setError(error.message || 'Failed to enrich transcript'); }
+      const result = await enrichTranscript(transcription, settings.enrichmentMode, settings.outputLanguage);
+      setEnrichedContent(result.enrichedContent);
+      await refreshUsage();
+    } catch (error: unknown) { 
+      setError(error instanceof Error ? error.message : 'Verarbeitung fehlgeschlagen'); 
+    }
     finally { setIsEnriching(false); }
   };
 
@@ -93,7 +99,7 @@ export function ResultsDisplay() {
                   className="btn-secondary flex items-center justify-center gap-1.5 px-3 py-2 text-sm touch-target disabled:opacity-50"
                 >
                   <RefreshCw className={`w-4 h-4 ${isEnriching ? 'animate-spin' : ''}`} />
-                  <span>Redo</span>
+                  <span>Neu</span>
                 </button>
               )}
               <button 
@@ -101,11 +107,11 @@ export function ResultsDisplay() {
                 className="btn-primary flex items-center justify-center gap-1.5 px-3 py-2 text-sm touch-target"
               >
                 {shareStatus === 'shared' ? (
-                  <><Check className="w-4 h-4" /><span>Shared</span></>
+                  <><Check className="w-4 h-4" /><span>Geteilt</span></>
                 ) : shareStatus === 'copied' ? (
-                  <><Check className="w-4 h-4" /><span>Copied</span></>
+                  <><Check className="w-4 h-4" /><span>Kopiert</span></>
                 ) : (
-                  <><Share2 className="w-4 h-4" /><span>Share</span></>
+                  <><Share2 className="w-4 h-4" /><span>Teilen</span></>
                 )}
               </button>
               <button 
@@ -113,9 +119,9 @@ export function ResultsDisplay() {
                 className="btn-secondary flex items-center justify-center gap-1.5 px-3 py-2 text-sm touch-target"
               >
                 {copiedField === activeTab ? (
-                  <><Check className="w-4 h-4 text-green-400" /><span>Copied</span></>
+                  <><Check className="w-4 h-4 text-green-400" /><span>Kopiert</span></>
                 ) : (
-                  <><Copy className="w-4 h-4" /><span>Copy</span></>
+                  <><Copy className="w-4 h-4" /><span>Kopieren</span></>
                 )}
               </button>
             </div>
@@ -131,17 +137,17 @@ export function ResultsDisplay() {
           <div className="text-center py-10 text-slate-400">
             {activeTab === 'enriched' && transcription ? (
               <div className="space-y-4">
-                <p className="text-sm">No enriched content yet.</p>
+                <p className="text-sm">Noch kein verarbeiteter Text.</p>
                 <button 
                   onClick={handleReEnrich} 
                   disabled={isEnriching} 
                   className="btn-primary px-5 py-2.5 text-sm disabled:opacity-50"
                 >
-                  {isEnriching ? 'Processing...' : 'Process with AI'}
+                  {isEnriching ? 'Verarbeite...' : 'Mit KI verarbeiten'}
                 </button>
               </div>
             ) : (
-              <p className="text-sm">Record a voice note to see results here.</p>
+              <p className="text-sm">Nimm eine Sprachnotiz auf um Ergebnisse zu sehen.</p>
             )}
           </div>
         )}

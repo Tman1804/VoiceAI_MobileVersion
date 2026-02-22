@@ -24,6 +24,11 @@ export async function transcribeAudio(
     throw new Error('Nicht eingeloggt. Bitte melde dich an.');
   }
 
+  // Debug: Check if URL is available
+  if (!SUPABASE_URL) {
+    throw new Error('SUPABASE_URL nicht konfiguriert');
+  }
+
   // Convert blob to base64
   const arrayBuffer = await audioBlob.arrayBuffer();
   const bytes = new Uint8Array(arrayBuffer);
@@ -34,29 +39,35 @@ export async function transcribeAudio(
   const audioBase64 = btoa(binary);
 
   // Call Supabase Edge Function
-  const response = await fetch(`${SUPABASE_URL}/functions/v1/transcribe`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${session.access_token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      audio: audioBase64,
-      language: language === 'auto' ? undefined : language,
-      mode,
-    }),
-  });
+  try {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/transcribe`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        audio: audioBase64,
+        language: language === 'auto' ? undefined : language,
+        mode,
+      }),
+    });
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Transkription fehlgeschlagen');
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+
+    const result = await response.json();
+    
+    return {
+      transcription: result.transcription || '',
+      enrichedContent: result.enrichedContent || '',
+      tokensUsed: result.tokensUsed || 0,
+    };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Transkription fehlgeschlagen: ${message}`);
   }
-
-  const result = await response.json();
-  
-  return {
-    transcription: result.transcription || '',
-    enrichedContent: result.enrichedContent || '',
-    tokensUsed: result.tokensUsed || 0,
-  };
 }
+

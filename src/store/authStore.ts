@@ -31,28 +31,30 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   initialize: async () => {
     try {
-      // Get initial session
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session) {
-        set({ session, user: session.user });
-        
-        // Load usage
-        const usage = await getUserUsage();
-        set({ usage });
-      }
-
-      // Listen for auth changes
+      // Listen for auth changes FIRST (so we don't miss OAuth callback)
       supabase.auth.onAuthStateChange(async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.email);
         set({ session, user: session?.user || null });
         
-        if (session) {
-          const usage = await getUserUsage();
-          set({ usage });
+        if (session?.user) {
+          // Load usage with userId to avoid race condition
+          const usage = await getUserUsage(session.user.id);
+          set({ usage, loading: false });
         } else {
           set({ usage: null });
         }
       });
+
+      // Get initial session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session?.user) {
+        set({ session, user: session.user });
+        
+        // Load usage with userId
+        const usage = await getUserUsage(session.user.id);
+        set({ usage });
+      }
     } catch (error) {
       console.error('Auth initialization error:', error);
     } finally {

@@ -1,8 +1,15 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Zap, TrendingUp, Loader2 } from 'lucide-react';
+import { Zap, TrendingUp } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+
+// Default values for new users
+const DEFAULT_USAGE = {
+  tokens_used: 0,
+  tokens_limit: 2500,
+  plan: 'trial' as const,
+};
 
 export function UsageDisplay() {
   const { usage, refreshUsage, loading, user } = useAuthStore();
@@ -14,32 +21,18 @@ export function UsageDisplay() {
     }
   }, [user, usage, refreshUsage]);
 
-  // Still loading auth
-  if (loading) return null;
-  
-  // No user logged in
-  if (!user) return null;
+  // Still loading auth or no user
+  if (loading || !user) return null;
 
-  // User logged in but usage not loaded yet - show loading state
-  if (!usage) {
-    return (
-      <div className="glass-card rounded-2xl p-4">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-primary-500/20">
-            <Loader2 className="w-4 h-4 text-primary-400 animate-spin" />
-          </div>
-          <span className="text-sm text-slate-400">Lade Token-Status...</span>
-        </div>
-      </div>
-    );
-  }
+  // Use actual usage or defaults (no spinner - show data immediately)
+  const displayUsage = usage || DEFAULT_USAGE;
 
-  const percentage = usage.tokens_limit > 0 
-    ? Math.min((usage.tokens_used / usage.tokens_limit) * 100, 100)
+  const percentage = displayUsage.tokens_limit > 0 
+    ? Math.min((displayUsage.tokens_used / displayUsage.tokens_limit) * 100, 100)
     : 0;
-  const remaining = Math.max(usage.tokens_limit - usage.tokens_used, 0);
+  const remaining = Math.max(displayUsage.tokens_limit - displayUsage.tokens_used, 0);
   const isLow = percentage > 80;
-  const isUnlimited = usage.plan === 'unlimited';
+  const isUnlimited = displayUsage.plan === 'unlimited';
 
   const planLabels: Record<string, string> = {
     trial: 'Trial',
@@ -56,7 +49,7 @@ export function UsageDisplay() {
             <Zap className={`w-4 h-4 ${isLow && !isUnlimited ? 'text-amber-400' : 'text-primary-400'}`} />
           </div>
           <span className="text-sm font-semibold text-white">
-            {planLabels[usage.plan]}
+            {planLabels[displayUsage.plan]}
           </span>
         </div>
         <span className="text-xs font-medium text-slate-400">
@@ -77,7 +70,7 @@ export function UsageDisplay() {
             />
           </div>
           <p className="mt-2 text-xs text-slate-500">
-            {usage.tokens_used.toLocaleString()} / {usage.tokens_limit.toLocaleString()} Tokens verwendet
+            {displayUsage.tokens_used.toLocaleString()} / {displayUsage.tokens_limit.toLocaleString()} Tokens verwendet
           </p>
         </>
       )}

@@ -18,7 +18,7 @@ vi.mock('../lib/supabase', () => ({
       signOut: () => mockSignOut(),
     },
   },
-  getUserUsage: () => mockGetUserUsage(),
+  getUserUsage: (userId?: string) => mockGetUserUsage(userId),
 }));
 
 // Import after mocking

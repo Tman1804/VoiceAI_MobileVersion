@@ -101,14 +101,19 @@ export interface UserUsage {
   plan: 'trial' | 'starter' | 'pro' | 'unlimited';
 }
 
-export async function getUserUsage(): Promise<UserUsage | null> {
-  const user = await getCurrentUser();
-  if (!user) return null;
+export async function getUserUsage(userId?: string): Promise<UserUsage | null> {
+  // Use provided userId or fetch from auth
+  let uid = userId;
+  if (!uid) {
+    const user = await getCurrentUser();
+    if (!user) return null;
+    uid = user.id;
+  }
 
   const { data, error } = await supabase
     .from('user_usage')
     .select('tokens_used, tokens_limit, plan')
-    .eq('user_id', user.id)
+    .eq('user_id', uid)
     .single();
 
   if (error) {
@@ -120,7 +125,13 @@ export async function getUserUsage(): Promise<UserUsage | null> {
         plan: 'trial',
       };
     }
-    throw error;
+    // Don't throw on other errors, just return defaults
+    console.error('getUserUsage error:', error);
+    return {
+      tokens_used: 0,
+      tokens_limit: 2500,
+      plan: 'trial',
+    };
   }
 
   return data;

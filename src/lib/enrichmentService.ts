@@ -1,8 +1,7 @@
 import { supabase } from './supabase';
 import { EnrichmentMode, OutputLanguage } from '@/store/appStore';
 
-// Fallback to hardcoded URL if env var is missing at build time
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mkjorwwmsmovymtuniyy.supabase.co';
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export interface EnrichmentResult {
@@ -17,17 +16,14 @@ export async function enrichTranscript(
 ): Promise<EnrichmentResult> {
   if (!transcript.trim()) throw new Error('Kein Text zum Verarbeiten.');
 
-  // Refresh session to ensure token is valid
-  const { data: refreshData } = await supabase.auth.refreshSession();
-  let session = refreshData?.session;
+  // Get session - simple, no refresh
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
   
-  if (!session) {
-    // Try getting existing session as fallback
-    const { data: { session: existingSession } } = await supabase.auth.getSession();
-    session = existingSession;
+  if (sessionError) {
+    throw new Error(`Session-Fehler: ${sessionError.message}`);
   }
   
-  if (!session) {
+  if (!session?.access_token) {
     throw new Error('Nicht eingeloggt. Bitte melde dich an.');
   }
 

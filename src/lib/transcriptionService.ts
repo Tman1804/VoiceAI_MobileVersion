@@ -1,8 +1,7 @@
 import { supabase } from './supabase';
 import { OutputLanguage, EnrichmentMode } from '@/store/appStore';
 
-// Fallback to hardcoded URL if env var is missing at build time
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mkjorwwmsmovymtuniyy.supabase.co';
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export interface TranscriptionResult {
@@ -16,8 +15,8 @@ export async function transcribeAudio(
   language: OutputLanguage = 'auto',
   mode: EnrichmentMode = 'clean-transcript'
 ): Promise<TranscriptionResult> {
-  // Check URL immediately
-  if (!SUPABASE_URL) {
+  // Check config
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     throw new Error('Server-Konfiguration fehlt. Bitte App neu installieren.');
   }
 
@@ -25,20 +24,14 @@ export async function transcribeAudio(
     throw new Error('Aufnahme zu lang. Bitte halte Aufnahmen unter 25MB.');
   }
 
-  // Refresh session to ensure token is valid
-  const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-  const session = refreshData?.session;
+  // Get session - simple, no refresh to avoid hangs
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
   
-  if (refreshError || !session) {
-    // Try getting existing session as fallback
-    const { data: { session: existingSession } } = await supabase.auth.getSession();
-    if (!existingSession) {
-      throw new Error('Nicht eingeloggt. Bitte melde dich an.');
-    }
+  if (sessionError) {
+    throw new Error(`Session-Fehler: ${sessionError.message}`);
   }
   
-  const activeSession = session || (await supabase.auth.getSession()).data.session;
-  if (!activeSession) {
+  if (!session?.access_token) {
     throw new Error('Nicht eingeloggt. Bitte melde dich an.');
   }
 
@@ -61,7 +54,7 @@ export async function transcribeAudio(
     const response = await fetch(fetchUrl, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${activeSession.access_token}`,
+        'Authorization': `Bearer ${session.access_token}`,
         'apikey': SUPABASE_ANON_KEY,
         'Content-Type': 'application/json',
       },

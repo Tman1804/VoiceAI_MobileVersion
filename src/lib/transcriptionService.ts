@@ -25,10 +25,20 @@ export async function transcribeAudio(
     throw new Error('Aufnahme zu lang. Bitte halte Aufnahmen unter 25MB.');
   }
 
-  // Get current session for auth
-  const { data: { session } } = await supabase.auth.getSession();
+  // Refresh session to ensure token is valid
+  const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+  const session = refreshData?.session;
   
-  if (!session) {
+  if (refreshError || !session) {
+    // Try getting existing session as fallback
+    const { data: { session: existingSession } } = await supabase.auth.getSession();
+    if (!existingSession) {
+      throw new Error('Nicht eingeloggt. Bitte melde dich an.');
+    }
+  }
+  
+  const activeSession = session || (await supabase.auth.getSession()).data.session;
+  if (!activeSession) {
     throw new Error('Nicht eingeloggt. Bitte melde dich an.');
   }
 
@@ -51,7 +61,7 @@ export async function transcribeAudio(
     const response = await fetch(fetchUrl, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${session.access_token}`,
+        'Authorization': `Bearer ${activeSession.access_token}`,
         'apikey': SUPABASE_ANON_KEY,
         'Content-Type': 'application/json',
       },

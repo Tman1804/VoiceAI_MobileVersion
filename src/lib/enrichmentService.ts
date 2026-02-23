@@ -17,8 +17,16 @@ export async function enrichTranscript(
 ): Promise<EnrichmentResult> {
   if (!transcript.trim()) throw new Error('Kein Text zum Verarbeiten.');
 
-  // Get current session for auth
-  const { data: { session } } = await supabase.auth.getSession();
+  // Refresh session to ensure token is valid
+  const { data: refreshData } = await supabase.auth.refreshSession();
+  let session = refreshData?.session;
+  
+  if (!session) {
+    // Try getting existing session as fallback
+    const { data: { session: existingSession } } = await supabase.auth.getSession();
+    session = existingSession;
+  }
+  
   if (!session) {
     throw new Error('Nicht eingeloggt. Bitte melde dich an.');
   }

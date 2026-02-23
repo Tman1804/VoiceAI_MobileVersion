@@ -1,29 +1,38 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Zap, TrendingUp } from 'lucide-react';
-import { getUserUsage, UserUsage } from '@/lib/supabase';
+import { useEffect } from 'react';
+import { Zap, TrendingUp, Loader2 } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
 
 export function UsageDisplay() {
-  const [usage, setUsage] = useState<UserUsage | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { usage, refreshUsage, loading, user } = useAuthStore();
 
+  // Refresh usage when user is available but usage isn't loaded yet
   useEffect(() => {
-    loadUsage();
-  }, []);
-
-  const loadUsage = async () => {
-    try {
-      const data = await getUserUsage();
-      setUsage(data);
-    } catch (err) {
-      console.error('Failed to load usage:', err);
-    } finally {
-      setLoading(false);
+    if (user && !usage) {
+      refreshUsage();
     }
-  };
+  }, [user, usage, refreshUsage]);
 
-  if (loading || !usage) return null;
+  // Still loading auth
+  if (loading) return null;
+  
+  // No user logged in
+  if (!user) return null;
+
+  // User logged in but usage not loaded yet - show loading state
+  if (!usage) {
+    return (
+      <div className="glass-card rounded-2xl p-4">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-primary-500/20">
+            <Loader2 className="w-4 h-4 text-primary-400 animate-spin" />
+          </div>
+          <span className="text-sm text-slate-400">Lade Token-Status...</span>
+        </div>
+      </div>
+    );
+  }
 
   const percentage = usage.tokens_limit > 0 
     ? Math.min((usage.tokens_used / usage.tokens_limit) * 100, 100)

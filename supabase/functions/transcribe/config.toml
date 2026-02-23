@@ -1,0 +1,3 @@
+# Disable automatic JWT verification by Supabase Gateway
+# We verify the JWT ourselves in the function code
+verify_jwt = false

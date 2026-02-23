@@ -24,8 +24,8 @@ export async function transcribeAudio(
     throw new Error('Aufnahme zu lang. Bitte halte Aufnahmen unter 25MB.');
   }
 
-  // Get session - simple, no refresh to avoid hangs
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  // Get fresh session
+  let { data: { session }, error: sessionError } = await supabase.auth.getSession();
   
   if (sessionError) {
     throw new Error(`Session-Fehler: ${sessionError.message}`);
@@ -33,6 +33,34 @@ export async function transcribeAudio(
   
   if (!session?.access_token) {
     throw new Error('Nicht eingeloggt. Bitte melde dich an.');
+  }
+
+  // Check if token is expired and try to refresh
+  const tokenParts = session.access_token.split('.');
+  if (tokenParts.length === 3) {
+    try {
+      const payload = JSON.parse(atob(tokenParts[1]));
+      const now = Math.floor(Date.now() / 1000);
+      if (payload.exp && payload.exp < now + 60) { // Expired or expiring in 60s
+        // Try to refresh with 5 second timeout
+        const refreshPromise = supabase.auth.refreshSession();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Refresh timeout')), 5000)
+        );
+        
+        try {
+          const refreshResult = await Promise.race([refreshPromise, timeoutPromise]) as { data: { session: typeof session }, error: Error | null };
+          if (refreshResult.data?.session) {
+            session = refreshResult.data.session;
+          }
+        } catch {
+          throw new Error('Session abgelaufen. Bitte neu einloggen.');
+        }
+      }
+    } catch (e) {
+      if (e instanceof Error && e.message.includes('abgelaufen')) throw e;
+      // If we can't parse token, continue - server will validate
+    }
   }
 
   // Convert blob to base64

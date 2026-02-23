@@ -109,33 +109,34 @@ serve(async (req) => {
     // 6. GPT Enrichment
     let enrichedContent = ''
     
-    if (mode && mode !== 'clean-transcript') {
-      const systemPrompts: Record<string, string> = {
-        'summarize': 'Fasse den folgenden Text prägnant zusammen. Behalte die wichtigsten Punkte bei.',
-        'action-items': 'Extrahiere alle Aufgaben und Action Items aus dem Text als Liste.',
-        'meeting-notes': 'Formatiere den Text als strukturierte Meeting-Notizen mit Überschriften, Teilnehmern falls erwähnt, Agenda-Punkten und Entscheidungen.',
-      }
+    const systemPrompts: Record<string, string> = {
+      'clean-transcript': 'Bereinige das folgende Transkript. Entferne Füllwörter wie "ähm", "äh", "also", korrigiere Grammatik und formatiere den Text in gut lesbare Absätze. Behalte die ursprüngliche Bedeutung bei.',
+      'summarize': 'Fasse den folgenden Text prägnant zusammen. Behalte die wichtigsten Punkte bei.',
+      'action-items': 'Extrahiere alle Aufgaben und Action Items aus dem Text als Liste.',
+      'meeting-notes': 'Formatiere den Text als strukturierte Meeting-Notizen mit Überschriften, Teilnehmern falls erwähnt, Agenda-Punkten und Entscheidungen.',
+    }
 
-      const enrichResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openaiApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: systemPrompts[mode] || 'Verbessere und formatiere den Text.' },
-            { role: 'user', content: transcription },
-          ],
-          max_tokens: 2000,
-        }),
-      })
+    const selectedPrompt = systemPrompts[mode] || systemPrompts['clean-transcript']
 
-      if (enrichResponse.ok) {
-        const enrichData = await enrichResponse.json()
-        enrichedContent = enrichData.choices?.[0]?.message?.content || ''
-      }
+    const enrichResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: selectedPrompt },
+          { role: 'user', content: transcription },
+        ],
+        max_tokens: 2000,
+      }),
+    })
+
+    if (enrichResponse.ok) {
+      const enrichData = await enrichResponse.json()
+      enrichedContent = enrichData.choices?.[0]?.message?.content || ''
     }
 
     // 7. Usage aktualisieren

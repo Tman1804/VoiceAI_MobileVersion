@@ -16,8 +16,8 @@ export async function enrichTranscript(
 ): Promise<EnrichmentResult> {
   if (!transcript.trim()) throw new Error('Kein Text zum Verarbeiten.');
 
-  // Get session - simple, no refresh
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  // Get session with auto-refresh if expired
+  let { data: { session }, error: sessionError } = await supabase.auth.getSession();
   
   if (sessionError) {
     throw new Error(`Session-Fehler: ${sessionError.message}`);
@@ -25,6 +25,25 @@ export async function enrichTranscript(
   
   if (!session?.access_token) {
     throw new Error('Nicht eingeloggt. Bitte melde dich an.');
+  }
+
+  // Check if token is expired and try to refresh
+  const tokenParts = session.access_token.split('.');
+  if (tokenParts.length === 3) {
+    try {
+      const payload = JSON.parse(atob(tokenParts[1]));
+      const now = Math.floor(Date.now() / 1000);
+      if (payload.exp && payload.exp < now + 60) {
+        const { data: refreshData } = await supabase.auth.refreshSession();
+        if (refreshData?.session) {
+          session = refreshData.session;
+        } else {
+          throw new Error('Session abgelaufen. Bitte neu einloggen.');
+        }
+      }
+    } catch (e) {
+      if (e instanceof Error && e.message.includes('abgelaufen')) throw e;
+    }
   }
 
   // Call Supabase Edge Function

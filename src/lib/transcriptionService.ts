@@ -14,6 +14,11 @@ export async function transcribeAudio(
   language: OutputLanguage = 'auto',
   mode: EnrichmentMode = 'clean-transcript'
 ): Promise<TranscriptionResult> {
+  // Check URL immediately
+  if (!SUPABASE_URL) {
+    throw new Error('Server-Konfiguration fehlt. Bitte App neu installieren.');
+  }
+
   if (audioBlob.size > 25 * 1024 * 1024) {
     throw new Error('Aufnahme zu lang. Bitte halte Aufnahmen unter 25MB.');
   }
@@ -22,11 +27,6 @@ export async function transcribeAudio(
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) {
     throw new Error('Nicht eingeloggt. Bitte melde dich an.');
-  }
-
-  // Debug: Check if URL is available
-  if (!SUPABASE_URL) {
-    throw new Error('SUPABASE_URL nicht konfiguriert');
   }
 
   // Convert blob to base64
@@ -38,7 +38,10 @@ export async function transcribeAudio(
   }
   const audioBase64 = btoa(binary);
 
-  // Call Supabase Edge Function
+  // Call Supabase Edge Function with timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+
   try {
     const response = await fetch(`${SUPABASE_URL}/functions/v1/transcribe`, {
       method: 'POST',
@@ -51,11 +54,14 @@ export async function transcribeAudio(
         language: language === 'auto' ? undefined : language,
         mode,
       }),
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`HTTP ${response.status}: ${errorText}`);
+      throw new Error(`Server-Fehler (${response.status}): ${errorText}`);
     }
 
     const result = await response.json();
@@ -66,6 +72,10 @@ export async function transcribeAudio(
       tokensUsed: result.tokensUsed || 0,
     };
   } catch (error: unknown) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Zeitüberschreitung. Bitte versuche es erneut.');
+    }
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`Transkription fehlgeschlagen: ${message}`);
   }

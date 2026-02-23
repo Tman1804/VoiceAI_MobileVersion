@@ -1,13 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+// Fallback to hardcoded values if env vars are missing at build time
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mkjorwwmsmovymtuniyy.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ram9yd3dtc21vdnltdHVuaXl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4NzAwNzIsImV4cCI6MjA1NTQ0NjA3Mn0.a0hxso2V40G7BVSaVYfGiWHd21xloOUM1EI7sJxpFYU';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase credentials not found. Running in offline mode.');
-}
-
-export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '');
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Auth helpers
 export async function signUp(email: string, password: string) {

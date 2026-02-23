@@ -1,7 +1,8 @@
 import { supabase } from './supabase';
 import { EnrichmentMode, OutputLanguage } from '@/store/appStore';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+// Fallback to hardcoded URL if env var is missing at build time
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mkjorwwmsmovymtuniyy.supabase.co';
 
 export interface EnrichmentResult {
   enrichedContent: string;

@@ -3,6 +3,7 @@ import { EnrichmentMode, OutputLanguage } from '@/store/appStore';
 
 // Fallback to hardcoded URL if env var is missing at build time
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mkjorwwmsmovymtuniyy.supabase.co';
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export interface EnrichmentResult {
   enrichedContent: string;
@@ -27,6 +28,7 @@ export async function enrichTranscript(
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${session.access_token}`,
+      'apikey': SUPABASE_ANON_KEY,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({

@@ -3,6 +3,7 @@ import { OutputLanguage, EnrichmentMode } from '@/store/appStore';
 
 // Fallback to hardcoded URL if env var is missing at build time
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mkjorwwmsmovymtuniyy.supabase.co';
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export interface TranscriptionResult {
   transcription: string;
@@ -26,6 +27,7 @@ export async function transcribeAudio(
 
   // Get current session for auth
   const { data: { session } } = await supabase.auth.getSession();
+  
   if (!session) {
     throw new Error('Nicht eingeloggt. Bitte melde dich an.');
   }
@@ -43,11 +45,14 @@ export async function transcribeAudio(
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
 
+  const fetchUrl = `${SUPABASE_URL}/functions/v1/transcribe`;
+
   try {
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/transcribe`, {
+    const response = await fetch(fetchUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${session.access_token}`,
+        'apikey': SUPABASE_ANON_KEY,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({

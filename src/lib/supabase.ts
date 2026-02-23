@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Fallback to hardcoded values if env vars are missing at build time
+// URL fallback for build reliability, anon key must come from secrets
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mkjorwwmsmovymtuniyy.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ram9yd3dtc21vdnltdHVuaXl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4NzAwNzIsImV4cCI6MjA1NTQ0NjA3Mn0.a0hxso2V40G7BVSaVYfGiWHd21xloOUM1EI7sJxpFYU';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 

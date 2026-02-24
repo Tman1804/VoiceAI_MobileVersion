@@ -81,7 +81,7 @@ serve(async (req) => {
     }
 
     // 4. Create Checkout Session
-    // Use Stripe's hosted success/cancel pages, app will detect via realtime
+    // Use our own payment-result page
     const { successUrl, cancelUrl } = await req.json()
     
     const session = await stripe.checkout.sessions.create({
@@ -93,8 +93,8 @@ serve(async (req) => {
           quantity: 1,
         },
       ],
-      success_url: successUrl || 'https://checkout.stripe.com/success',
-      cancel_url: cancelUrl || 'https://checkout.stripe.com/cancel',
+      success_url: successUrl || `${supabaseUrl}/functions/v1/payment-result?status=success`,
+      cancel_url: cancelUrl || `${supabaseUrl}/functions/v1/payment-result?status=cancel`,
       subscription_data: {
         metadata: {
           supabase_user_id: user.id,

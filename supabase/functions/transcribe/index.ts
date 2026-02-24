@@ -58,7 +58,7 @@ serve(async (req) => {
       throw new Error('Fehler beim Laden der Nutzungsdaten')
     }
 
-    const currentUsage = usage || { tokens_used: 0, tokens_limit: 2500, plan: 'trial' }
+    const currentUsage = usage || { tokens_used: 0, tokens_limit: 5000, plan: 'trial' }
     
     // Unlimited überprüfen
     if (currentUsage.plan !== 'unlimited' && currentUsage.tokens_used >= currentUsage.tokens_limit) {
@@ -148,10 +148,10 @@ serve(async (req) => {
         .update({ tokens_used: currentUsage.tokens_used + tokensUsed })
         .eq('user_id', user.id)
     } else {
-      // Neuer User
+      // Neuer User - Trial mit 5000 Tokens
       await supabase
         .from('user_usage')
-        .insert({ user_id: user.id, tokens_used: tokensUsed, tokens_limit: 2500, plan: 'trial' })
+        .insert({ user_id: user.id, tokens_used: tokensUsed, tokens_limit: 5000, plan: 'trial' })
     }
 
     // Usage History loggen

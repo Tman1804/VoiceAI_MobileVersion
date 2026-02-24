@@ -54,6 +54,17 @@ export function useDeepLink() {
           console.log('Deep link event received:', urls);
           for (const url of urls) {
             if (url.includes('voxwarp://')) {
+              // Handle payment callbacks
+              if (url.includes('payment-success')) {
+                console.log('Payment success callback received');
+                handlePaymentSuccess();
+                continue;
+              }
+              if (url.includes('payment-cancel')) {
+                console.log('Payment cancelled');
+                continue;
+              }
+              // Handle auth callbacks
               console.log('Processing callback URL:', url);
               await handleAuthCallback(url);
             }
@@ -75,6 +86,24 @@ export function useDeepLink() {
       cleanup.then((fn) => fn?.());
     };
   }, [initialize]);
+}
+
+// Handle successful payment - refresh usage to show new Pro plan
+async function handlePaymentSuccess() {
+  try {
+    const { refreshUsage, user } = useAuthStore.getState();
+    
+    // Wait a moment for webhook to process
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Refresh usage to get updated plan
+    if (user) {
+      await refreshUsage();
+      console.log('Usage refreshed after payment success');
+    }
+  } catch (error) {
+    console.error('Error handling payment success:', error);
+  }
 }
 
 async function handleAuthCallback(url: string) {

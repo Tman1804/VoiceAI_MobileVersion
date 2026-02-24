@@ -21,7 +21,7 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
 
   const handleUpgrade = async () => {
     if (!session?.access_token) {
-      setError('Du musst eingeloggt sein');
+      setError('Please log in first');
       return;
     }
 
@@ -41,7 +41,7 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Checkout konnte nicht erstellt werden');
+        throw new Error(data.message || 'Could not create checkout');
       }
 
       // Open Stripe Checkout in browser
@@ -57,7 +57,7 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
         onClose();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ein Fehler ist aufgetreten');
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -87,10 +87,10 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
           </div>
           
           <h2 className="text-2xl font-bold text-white mb-2">
-            Upgrade auf Pro
+            Upgrade to Pro
           </h2>
           <p className="text-white/80 text-sm">
-            Mehr Transkriptionen, mehr Möglichkeiten
+            More transcriptions, more possibilities
           </p>
         </div>
 
@@ -99,19 +99,18 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
           {/* Pricing */}
           <div className="text-center mb-6">
             <div className="flex items-baseline justify-center gap-1">
-              <span className="text-4xl font-bold text-white">€3,99</span>
-              <span className="text-slate-400">/Monat</span>
+              <span className="text-4xl font-bold text-white">€3.99</span>
+              <span className="text-slate-400">/month</span>
             </div>
-            <p className="text-slate-500 text-sm mt-1">Jederzeit kündbar</p>
+            <p className="text-slate-500 text-sm mt-1">Cancel anytime</p>
           </div>
 
           {/* Features */}
           <div className="space-y-3 mb-6">
-            <Feature text="50.000 Tokens pro Monat" />
-            <Feature text="~70 Aufnahmen / ~70 Minuten" />
-            <Feature text="Alle AI Modi (Clean, Summarize, Action Items...)" />
-            <Feature text="Unbegrenzter Verlauf" />
-            <Feature text="Prioritäts-Support" />
+            <Feature text="50,000 tokens per month" />
+            <Feature text="~70 recordings / ~70 minutes" />
+            <Feature text="All AI modes (Clean, Summarize, Action Items...)" />
+            <Feature text="Priority support" />
           </div>
 
           {/* Comparison */}
@@ -119,18 +118,18 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
             <div className="flex justify-between text-sm">
               <div>
                 <p className="text-slate-400">Trial</p>
-                <p className="text-white font-medium">5.000 Tokens</p>
+                <p className="text-white font-medium">5,000 Tokens</p>
               </div>
               <div className="text-right">
                 <p className="text-primary-400">Pro</p>
-                <p className="text-white font-medium">50.000 Tokens</p>
+                <p className="text-white font-medium">50,000 Tokens</p>
               </div>
             </div>
             <div className="mt-2 h-2 bg-slate-700 rounded-full overflow-hidden">
               <div className="h-full w-[10%] bg-slate-500 rounded-full" />
               <div className="h-full w-full bg-gradient-to-r from-primary-500 to-cyan-400 rounded-full -mt-2" />
             </div>
-            <p className="text-center text-xs text-slate-500 mt-2">10x mehr Tokens</p>
+            <p className="text-center text-xs text-slate-500 mt-2">10x more tokens</p>
           </div>
 
           {/* Error */}
@@ -149,18 +148,18 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
             {loading ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                Wird geladen...
+                Loading...
               </>
             ) : (
               <>
                 <ExternalLink className="w-5 h-5" />
-                Jetzt upgraden
+                Upgrade now
               </>
             )}
           </button>
 
           <p className="text-center text-xs text-slate-500 mt-4">
-            Sichere Zahlung über Stripe. Kreditkarte, PayPal, Apple Pay & mehr.
+            Secure payment via Stripe. Credit card, PayPal, Apple Pay & more.
           </p>
         </div>
       </div>

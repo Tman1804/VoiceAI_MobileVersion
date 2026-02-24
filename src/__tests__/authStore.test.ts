@@ -5,6 +5,14 @@ const mockGetSession = vi.fn();
 const mockOnAuthStateChange = vi.fn();
 const mockSignOut = vi.fn();
 const mockGetUserUsage = vi.fn();
+const mockChannel = vi.fn();
+const mockRemoveChannel = vi.fn();
+
+// Mock channel object
+const mockChannelObj = {
+  on: vi.fn().mockReturnThis(),
+  subscribe: vi.fn().mockReturnThis(),
+};
 
 // Mock @/lib/supabase - this is what authStore actually imports
 vi.mock('../lib/supabase', () => ({
@@ -17,6 +25,11 @@ vi.mock('../lib/supabase', () => ({
       },
       signOut: () => mockSignOut(),
     },
+    channel: (name: string) => {
+      mockChannel(name);
+      return mockChannelObj;
+    },
+    removeChannel: mockRemoveChannel,
   },
   getUserUsage: (userId?: string) => mockGetUserUsage(userId),
 }));

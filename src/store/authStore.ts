@@ -1,9 +1,10 @@
 import { create } from 'zustand';
-import { User, Session } from '@supabase/supabase-js';
+import { User, Session, RealtimeChannel } from '@supabase/supabase-js';
 import { supabase, getUserUsage, UserUsage } from '@/lib/supabase';
 
 // Track if listener is already registered (prevent duplicates)
 let authListenerRegistered = false;
+let realtimeChannel: RealtimeChannel | null = null;
 
 interface AuthState {
   user: User | null;
@@ -17,6 +18,8 @@ interface AuthState {
   setLoading: (loading: boolean) => void;
   initialize: () => Promise<void>;
   refreshUsage: () => Promise<void>;
+  subscribeToUsageChanges: (userId: string) => void;
+  unsubscribeFromUsageChanges: () => void;
   logout: () => Promise<void>;
 }
 
@@ -31,6 +34,44 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setSession: (session) => set({ session }),
   setUsage: (usage) => set({ usage }),
   setLoading: (loading) => set({ loading }),
+
+  // Subscribe to realtime changes on user_usage table
+  subscribeToUsageChanges: (userId: string) => {
+    // Unsubscribe from any existing channel first
+    get().unsubscribeFromUsageChanges();
+    
+    console.log('Subscribing to realtime usage changes for user:', userId);
+    
+    realtimeChannel = supabase
+      .channel(`user_usage_${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: 'user_usage',
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log('Realtime usage update received:', payload);
+          if (payload.new && typeof payload.new === 'object') {
+            const newUsage = payload.new as UserUsage;
+            set({ usage: newUsage });
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status);
+      });
+  },
+
+  unsubscribeFromUsageChanges: () => {
+    if (realtimeChannel) {
+      console.log('Unsubscribing from realtime usage changes');
+      supabase.removeChannel(realtimeChannel);
+      realtimeChannel = null;
+    }
+  },
 
   initialize: async () => {
     // Don't re-initialize if already done
@@ -53,8 +94,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             // Load usage with userId to avoid race condition
             const usage = await getUserUsage(session.user.id);
             set({ usage, loading: false });
+            
+            // Subscribe to realtime updates
+            get().subscribeToUsageChanges(session.user.id);
           } else {
             set({ usage: null });
+            get().unsubscribeFromUsageChanges();
           }
         });
       }
@@ -69,6 +114,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         // Load usage with userId
         const usage = await getUserUsage(session.user.id);
         set({ usage });
+        
+        // Subscribe to realtime updates
+        get().subscribeToUsageChanges(session.user.id);
       }
     } catch (error) {
       console.error('Auth initialization error:', error);
@@ -90,6 +138,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
+    get().unsubscribeFromUsageChanges();
     await supabase.auth.signOut();
     set({ user: null, session: null, usage: null });
   },

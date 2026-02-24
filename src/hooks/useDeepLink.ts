@@ -128,7 +128,7 @@ async function handleAuthCallback(url: string) {
 
       // Directly update the auth store state (don't wait for onAuthStateChange)
       if (data.session && data.user) {
-        const { setSession, setUser, setUsage, setLoading } = useAuthStore.getState();
+        const { setSession, setUser, setUsage, setLoading, subscribeToUsageChanges } = useAuthStore.getState();
         setSession(data.session);
         setUser(data.user);
         
@@ -137,6 +137,9 @@ async function handleAuthCallback(url: string) {
         const usage = await getUserUsage(data.user.id);
         setUsage(usage);
         setLoading(false);
+        
+        // Subscribe to realtime usage updates
+        subscribeToUsageChanges(data.user.id);
         
         console.log('Auth store updated directly, OAuth login complete!');
       }

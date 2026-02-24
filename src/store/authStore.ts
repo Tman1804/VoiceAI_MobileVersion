@@ -89,9 +89,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         supabase.auth.onAuthStateChange(async (event, session) => {
           console.log('Auth state change:', event, session?.user?.email);
           
+          // Skip TOKEN_REFRESHED if we already have user data - no need to reload
+          if (event === 'TOKEN_REFRESHED' && get().user && get().usage) {
+            set({ session });
+            return;
+          }
+          
           if (session?.user) {
-            // Set loading to true while we fetch usage data
-            set({ session, user: session.user, loading: true });
+            // Only set loading if we don't have user data yet (fresh login)
+            const needsLoading = !get().user;
+            if (needsLoading) {
+              set({ session, user: session.user, loading: true });
+            } else {
+              set({ session, user: session.user });
+            }
             
             // Load usage with userId
             const usage = await getUserUsage(session.user.id);

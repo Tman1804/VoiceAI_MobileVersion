@@ -76,7 +76,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   initialize: async () => {
     // Don't re-initialize if already done
     if (get().initialized) {
-      console.log('Auth already initialized, skipping');
       return;
     }
 
@@ -84,51 +83,50 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Register auth listener ONCE
       if (!authListenerRegistered) {
         authListenerRegistered = true;
-        console.log('Registering auth state change listener');
         
         supabase.auth.onAuthStateChange(async (event, session) => {
-          console.log('Auth state change:', event, session?.user?.email);
+          console.log('Auth event:', event);
+          
+          // Always update session immediately
+          set({ session });
           
           if (session?.user) {
-            // Only show loading if we don't have data yet
-            const hasData = get().user && get().usage;
-            set({ session, user: session.user, loading: !hasData });
+            set({ user: session.user });
             
-            // Load/refresh usage in background
-            const usage = await getUserUsage(session.user.id);
-            set({ usage, loading: false, initialized: true });
+            // Load usage in background - never blocks UI after init
+            getUserUsage(session.user.id).then(usage => {
+              set({ usage });
+            }).catch(console.error);
             
             // Subscribe to realtime updates
             get().subscribeToUsageChanges(session.user.id);
-          } else {
-            set({ session: null, user: null, usage: null, loading: false });
+          } else if (event === 'SIGNED_OUT') {
+            set({ user: null, usage: null });
             get().unsubscribeFromUsageChanges();
           }
         });
       }
 
-      // Get initial session
+      // Get initial session - this is the ONLY place we show loading
       const { data: { session } } = await supabase.auth.getSession();
-      console.log('Initial session check:', session?.user?.email || 'no session');
       
       if (session?.user) {
-        // Check if onAuthStateChange already handled this
-        if (!get().user) {
-          set({ session, user: session.user });
-          
-          // Load usage with userId
-          const usage = await getUserUsage(session.user.id);
-          set({ usage, loading: false, initialized: true });
-          
-          // Subscribe to realtime updates
-          get().subscribeToUsageChanges(session.user.id);
-        }
-      } else {
-        // No session - done loading
-        set({ loading: false, initialized: true });
+        set({ session, user: session.user });
+        
+        // Load usage - wait for this on initial load only
+        const usage = await getUserUsage(session.user.id);
+        set({ usage });
+        
+        // Subscribe to realtime updates
+        get().subscribeToUsageChanges(session.user.id);
       }
+      
+      // Done - never show loading again after this point
+      set({ loading: false, initialized: true });
+      
     } catch (error) {
       console.error('Auth initialization error:', error);
+      // Always finish loading even on error
       set({ loading: false, initialized: true });
     }
   },
@@ -146,14 +144,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
-    console.log('Logout called');
     try {
       get().unsubscribeFromUsageChanges();
-      console.log('Unsubscribed from realtime');
       await supabase.auth.signOut();
-      console.log('Signed out from Supabase');
       set({ user: null, session: null, usage: null });
-      console.log('State cleared');
     } catch (error) {
       console.error('Logout error:', error);
     }

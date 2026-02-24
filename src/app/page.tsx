@@ -20,7 +20,7 @@ const ENRICHMENT_MODES: EnrichmentMode[] = ['clean-transcript', 'summarize', 'ac
 
 export default function Home() {
   const { viewMode, setViewMode, transcription, enrichedContent, error, setError, settings, updateSettings, recordings, showUpgradeModal, setShowUpgradeModal } = useAppStore();
-  const { user, loading: authLoading, initialized, initialize, logout } = useAuthStore();
+  const { user, initialized, initialize, logout } = useAuthStore();
   const { isMobile } = useTauriIntegration();
   const [showModeDropdown, setShowModeDropdown] = useState(false);
   
@@ -34,13 +34,13 @@ export default function Home() {
     }
   }, [initialized, initialize]);
 
-  // Show loading while initializing auth
-  if (!initialized || authLoading) {
+  // Show loading ONLY during initial app startup
+  if (!initialized) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 text-primary-500 animate-spin mx-auto mb-4" />
-          <p className="text-slate-400">Laden...</p>
+          <p className="text-slate-400">Loading...</p>
         </div>
       </div>
     );

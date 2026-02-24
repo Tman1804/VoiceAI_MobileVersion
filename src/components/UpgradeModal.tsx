@@ -102,7 +102,7 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
           {/* Pricing */}
           <div className="text-center mb-6">
             <div className="flex items-baseline justify-center gap-1">
-              <span className="text-4xl font-bold text-white">€6,99</span>
+              <span className="text-4xl font-bold text-white">€3,99</span>
               <span className="text-slate-400">/Monat</span>
             </div>
             <p className="text-slate-500 text-sm mt-1">Jederzeit kündbar</p>

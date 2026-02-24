@@ -47,7 +47,8 @@ export default function Home() {
 
   // Show auth screen if not logged in
   if (!user) {
-    return <AuthScreen onSuccess={() => initialize()} />;
+    // No onSuccess needed - store updates reactively when user logs in
+    return <AuthScreen onSuccess={() => {}} />;
   }
 
   return (

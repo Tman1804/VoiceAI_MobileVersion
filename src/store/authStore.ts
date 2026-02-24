@@ -2,6 +2,9 @@ import { create } from 'zustand';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase, getUserUsage, UserUsage } from '@/lib/supabase';
 
+// Track if listener is already registered (prevent duplicates)
+let authListenerRegistered = false;
+
 interface AuthState {
   user: User | null;
   session: Session | null;
@@ -30,23 +33,35 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setLoading: (loading) => set({ loading }),
 
   initialize: async () => {
+    // Don't re-initialize if already done
+    if (get().initialized) {
+      console.log('Auth already initialized, skipping');
+      return;
+    }
+
     try {
-      // Listen for auth changes FIRST (so we don't miss OAuth callback)
-      supabase.auth.onAuthStateChange(async (event, session) => {
-        console.log('Auth state change:', event, session?.user?.email);
-        set({ session, user: session?.user || null });
+      // Register auth listener ONCE
+      if (!authListenerRegistered) {
+        authListenerRegistered = true;
+        console.log('Registering auth state change listener');
         
-        if (session?.user) {
-          // Load usage with userId to avoid race condition
-          const usage = await getUserUsage(session.user.id);
-          set({ usage, loading: false });
-        } else {
-          set({ usage: null });
-        }
-      });
+        supabase.auth.onAuthStateChange(async (event, session) => {
+          console.log('Auth state change:', event, session?.user?.email);
+          set({ session, user: session?.user || null });
+          
+          if (session?.user) {
+            // Load usage with userId to avoid race condition
+            const usage = await getUserUsage(session.user.id);
+            set({ usage, loading: false });
+          } else {
+            set({ usage: null });
+          }
+        });
+      }
 
       // Get initial session
       const { data: { session } } = await supabase.auth.getSession();
+      console.log('Initial session check:', session?.user?.email || 'no session');
       
       if (session?.user) {
         set({ session, user: session.user });
@@ -67,7 +82,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (!user) return;
     
     try {
-      const usage = await getUserUsage();
+      const usage = await getUserUsage(user.id);
       set({ usage });
     } catch (error) {
       console.error('Failed to refresh usage:', error);

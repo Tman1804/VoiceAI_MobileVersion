@@ -126,11 +126,20 @@ async function handleAuthCallback(url: string) {
 
       console.log('Session set successfully:', data.user?.email);
 
-      // Re-initialize auth store to update UI
-      const { initialize } = useAuthStore.getState();
-      await initialize();
-      
-      console.log('Auth store re-initialized, OAuth login complete!');
+      // Directly update the auth store state (don't wait for onAuthStateChange)
+      if (data.session && data.user) {
+        const { setSession, setUser, setUsage, setLoading } = useAuthStore.getState();
+        setSession(data.session);
+        setUser(data.user);
+        
+        // Load usage immediately
+        const { getUserUsage } = await import('@/lib/supabase');
+        const usage = await getUserUsage(data.user.id);
+        setUsage(usage);
+        setLoading(false);
+        
+        console.log('Auth store updated directly, OAuth login complete!');
+      }
     } else {
       console.error('Missing tokens in callback URL');
     }

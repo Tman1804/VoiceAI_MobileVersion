@@ -8,6 +8,7 @@ import { HistoryList } from '@/components/HistoryList';
 import { HistoryDetail } from '@/components/HistoryDetail';
 import { AuthScreen } from '@/components/AuthScreen';
 import { UsageDisplay } from '@/components/UsageDisplay';
+import { UpgradeModal } from '@/components/UpgradeModal';
 import { useAppStore, EnrichmentMode } from '@/store/appStore';
 import { useAuthStore } from '@/store/authStore';
 import { useTauriIntegration } from '@/hooks/useTauriIntegration';
@@ -18,7 +19,7 @@ import { getEnrichmentModeLabel } from '@/lib/enrichmentService';
 const ENRICHMENT_MODES: EnrichmentMode[] = ['clean-transcript', 'summarize', 'action-items', 'meeting-notes'];
 
 export default function Home() {
-  const { viewMode, setViewMode, transcription, enrichedContent, error, setError, settings, updateSettings, recordings } = useAppStore();
+  const { viewMode, setViewMode, transcription, enrichedContent, error, setError, settings, updateSettings, recordings, showUpgradeModal, setShowUpgradeModal } = useAppStore();
   const { user, loading: authLoading, initialized, initialize, logout } = useAuthStore();
   const { isMobile } = useTauriIntegration();
   const [showModeDropdown, setShowModeDropdown] = useState(false);
@@ -186,6 +187,12 @@ export default function Home() {
           </p>
         </footer>
       )}
+
+      {/* Upgrade Modal - rendered at page level to avoid z-index issues */}
+      <UpgradeModal 
+        isOpen={showUpgradeModal} 
+        onClose={() => setShowUpgradeModal(false)} 
+      />
     </main>
   );
 }

@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Zap, TrendingUp } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
-import { UpgradeModal } from './UpgradeModal';
+import { useAppStore } from '@/store/appStore';
 
 // Default values for new users (Trial: 5000 tokens)
 const DEFAULT_USAGE = {
@@ -14,7 +14,7 @@ const DEFAULT_USAGE = {
 
 export function UsageDisplay() {
   const { usage, refreshUsage, loading, user } = useAuthStore();
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const { setShowUpgradeModal } = useAppStore();
   // Refresh usage when user is available but usage isn't loaded yet
   useEffect(() => {
     if (user && !usage) {
@@ -78,18 +78,16 @@ export function UsageDisplay() {
 
       {isLow && !isUnlimited && displayUsage.plan === 'trial' && (
         <button 
-          onClick={() => setShowUpgradeModal(true)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowUpgradeModal(true);
+          }}
           className="mt-3 w-full btn-primary py-2.5 flex items-center justify-center gap-2 text-sm"
         >
           <TrendingUp className="w-4 h-4" />
           Upgrade
         </button>
       )}
-
-      <UpgradeModal 
-        isOpen={showUpgradeModal} 
-        onClose={() => setShowUpgradeModal(false)} 
-      />
     </div>
   );
 }

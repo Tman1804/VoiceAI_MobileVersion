@@ -67,15 +67,15 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/90"
         onClick={onClose}
       />
       
       {/* Modal */}
-      <div className="relative w-full max-w-md glass-card rounded-3xl overflow-hidden animate-fadeIn">
+      <div className="relative w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl overflow-hidden shadow-2xl">
         {/* Header */}
         <div className="relative bg-gradient-to-br from-primary-500 to-cyan-500 px-6 py-8 text-center">
           <button
@@ -98,7 +98,7 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-6 bg-slate-900">
           {/* Pricing */}
           <div className="text-center mb-6">
             <div className="flex items-baseline justify-center gap-1">
@@ -118,7 +118,7 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
           </div>
 
           {/* Comparison */}
-          <div className="bg-slate-800/50 rounded-xl p-4 mb-6">
+          <div className="bg-slate-800 rounded-xl p-4 mb-6">
             <div className="flex justify-between text-sm">
               <div>
                 <p className="text-slate-400">Trial</p>
@@ -138,7 +138,7 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
 
           {/* Error */}
           {error && (
-            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-xl">
+            <div className="mb-4 p-3 bg-red-900 border border-red-700 rounded-xl">
               <p className="text-red-300 text-sm text-center">{error}</p>
             </div>
           )}
@@ -174,8 +174,8 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
 function Feature({ text }: { text: string }) {
   return (
     <div className="flex items-center gap-3">
-      <div className="flex-shrink-0 w-5 h-5 bg-primary-500/20 rounded-full flex items-center justify-center">
-        <Check className="w-3 h-3 text-primary-400" />
+      <div className="flex-shrink-0 w-5 h-5 bg-primary-600 rounded-full flex items-center justify-center">
+        <Check className="w-3 h-3 text-white" />
       </div>
       <span className="text-slate-300 text-sm">{text}</span>
     </div>

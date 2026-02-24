@@ -39,6 +39,8 @@ interface AppState {
   settings: Settings;
   recordings: Recording[];
   selectedRecordingId: string | null;
+  showUpgradeModal: boolean;
+  setShowUpgradeModal: (value: boolean) => void;
   setIsRecording: (value: boolean) => void;
   setRecordingDuration: (value: number) => void;
   setAudioBlob: (blob: Blob | null) => void;
@@ -80,6 +82,8 @@ export const useAppStore = create<AppState>()(
       settings: defaultSettings,
       recordings: [],
       selectedRecordingId: null,
+      showUpgradeModal: false,
+      setShowUpgradeModal: (value) => set({ showUpgradeModal: value }),
       setIsRecording: (value) => set({ isRecording: value }),
       setRecordingDuration: (value) => set({ recordingDuration: value }),
       setAudioBlob: (blob) => set({ audioBlob: blob }),

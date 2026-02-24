@@ -110,7 +110,6 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
             <Feature text="50,000 tokens per month" />
             <Feature text="~70 recordings / ~70 minutes" />
             <Feature text="All AI modes (Clean, Summarize, Action Items...)" />
-            <Feature text="Priority support" />
           </div>
 
           {/* Comparison */}

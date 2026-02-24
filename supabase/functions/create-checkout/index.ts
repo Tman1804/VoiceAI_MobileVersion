@@ -81,12 +81,11 @@ serve(async (req) => {
     }
 
     // 4. Create Checkout Session
-    // For mobile apps, we use a URL that the app can handle
+    // Use Stripe's hosted success/cancel pages, app will detect via realtime
     const { successUrl, cancelUrl } = await req.json()
     
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      payment_method_types: ['card'],
       mode: 'subscription',
       line_items: [
         {
@@ -94,8 +93,8 @@ serve(async (req) => {
           quantity: 1,
         },
       ],
-      success_url: successUrl || 'voxwarp://payment-success',
-      cancel_url: cancelUrl || 'voxwarp://payment-cancel',
+      success_url: successUrl || 'https://checkout.stripe.com/success',
+      cancel_url: cancelUrl || 'https://checkout.stripe.com/cancel',
       subscription_data: {
         metadata: {
           supabase_user_id: user.id,
@@ -103,12 +102,6 @@ serve(async (req) => {
       },
       allow_promotion_codes: true,
       billing_address_collection: 'auto',
-      // Enable additional payment methods
-      payment_method_options: {
-        card: {
-          setup_future_usage: 'off_session',
-        },
-      },
     })
 
     return new Response(

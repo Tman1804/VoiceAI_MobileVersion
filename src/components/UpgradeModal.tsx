@@ -35,10 +35,7 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          successUrl: 'voxwarp://payment-success',
-          cancelUrl: 'voxwarp://payment-cancel',
-        }),
+        body: JSON.stringify({}), // Use default URLs - app detects via realtime
       });
 
       const data = await response.json();

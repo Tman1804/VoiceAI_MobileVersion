@@ -1,18 +1,29 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// Mock functions
-const mockGetSession = vi.fn();
-const mockOnAuthStateChange = vi.fn();
-const mockSignOut = vi.fn();
-const mockGetUserUsage = vi.fn();
-const mockChannel = vi.fn();
-const mockRemoveChannel = vi.fn();
-
-// Mock channel object
-const mockChannelObj = {
-  on: vi.fn().mockReturnThis(),
-  subscribe: vi.fn().mockReturnThis(),
-};
+// Mock functions - use vi.hoisted() so they're available when vi.mock is hoisted
+const {
+  mockGetSession,
+  mockOnAuthStateChange,
+  mockSignOut,
+  mockGetUserUsage,
+  mockChannel,
+  mockRemoveChannel,
+  mockChannelObj,
+} = vi.hoisted(() => {
+  const mockChannelObj = {
+    on: vi.fn().mockReturnThis(),
+    subscribe: vi.fn().mockReturnThis(),
+  };
+  return {
+    mockGetSession: vi.fn(),
+    mockOnAuthStateChange: vi.fn(),
+    mockSignOut: vi.fn(),
+    mockGetUserUsage: vi.fn(),
+    mockChannel: vi.fn(),
+    mockRemoveChannel: vi.fn(),
+    mockChannelObj,
+  };
+});
 
 // Mock @/lib/supabase - this is what authStore actually imports
 vi.mock('../lib/supabase', () => ({

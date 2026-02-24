@@ -94,7 +94,10 @@ export default function Home() {
               <Settings className="w-5 h-5" />
             </button>
             <button
-              onClick={logout}
+              onClick={() => {
+                console.log('Logout button clicked');
+                logout().catch(err => console.error('Logout failed:', err));
+              }}
               className="p-2.5 hover:bg-red-500/20 rounded-xl transition-all duration-200 touch-target text-slate-400 hover:text-red-400"
               title="Logout"
             >

@@ -138,8 +138,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
-    get().unsubscribeFromUsageChanges();
-    await supabase.auth.signOut();
-    set({ user: null, session: null, usage: null });
+    console.log('Logout called');
+    try {
+      get().unsubscribeFromUsageChanges();
+      console.log('Unsubscribed from realtime');
+      await supabase.auth.signOut();
+      console.log('Signed out from Supabase');
+      set({ user: null, session: null, usage: null });
+      console.log('State cleared');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   },
 }));

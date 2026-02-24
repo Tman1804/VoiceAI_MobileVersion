@@ -52,8 +52,8 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
         // For Tauri, we need to open in external browser
         // @ts-ignore - Tauri API
         if (window.__TAURI__) {
-          const { open } = await import('@tauri-apps/plugin-opener');
-          await open(data.url);
+          const { openUrl } = await import('@tauri-apps/plugin-opener');
+          await openUrl(data.url);
         } else {
           window.open(data.url, '_blank');
         }

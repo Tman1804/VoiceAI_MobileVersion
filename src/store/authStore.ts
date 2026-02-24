@@ -88,17 +88,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         
         supabase.auth.onAuthStateChange(async (event, session) => {
           console.log('Auth state change:', event, session?.user?.email);
-          set({ session, user: session?.user || null });
           
           if (session?.user) {
-            // Load usage with userId to avoid race condition
+            // Set loading to true while we fetch usage data
+            set({ session, user: session.user, loading: true });
+            
+            // Load usage with userId
             const usage = await getUserUsage(session.user.id);
-            set({ usage, loading: false });
+            set({ usage, loading: false, initialized: true });
             
             // Subscribe to realtime updates
             get().subscribeToUsageChanges(session.user.id);
           } else {
-            set({ usage: null });
+            set({ session: null, user: null, usage: null, loading: false });
             get().unsubscribeFromUsageChanges();
           }
         });
@@ -109,18 +111,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       console.log('Initial session check:', session?.user?.email || 'no session');
       
       if (session?.user) {
-        set({ session, user: session.user });
-        
-        // Load usage with userId
-        const usage = await getUserUsage(session.user.id);
-        set({ usage });
-        
-        // Subscribe to realtime updates
-        get().subscribeToUsageChanges(session.user.id);
+        // Check if onAuthStateChange already handled this
+        if (!get().user) {
+          set({ session, user: session.user });
+          
+          // Load usage with userId
+          const usage = await getUserUsage(session.user.id);
+          set({ usage, loading: false, initialized: true });
+          
+          // Subscribe to realtime updates
+          get().subscribeToUsageChanges(session.user.id);
+        }
+      } else {
+        // No session - done loading
+        set({ loading: false, initialized: true });
       }
     } catch (error) {
       console.error('Auth initialization error:', error);
-    } finally {
       set({ loading: false, initialized: true });
     }
   },

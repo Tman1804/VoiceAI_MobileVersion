@@ -3,14 +3,22 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': '*',
+}
+
 serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
   const url = new URL(req.url)
   const status = url.searchParams.get('status') || 'success'
   
   const isSuccess = status === 'success'
   
-  const html = `
-<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -44,20 +52,22 @@ serve(async (req) => {
     }
     .success { background: linear-gradient(135deg, #10b981, #06b6d4); }
     .cancel { background: linear-gradient(135deg, #f59e0b, #ef4444); }
-    h1 {
-      font-size: 24px;
-      margin-bottom: 12px;
-    }
-    p {
-      color: #94a3b8;
-      margin-bottom: 32px;
-      line-height: 1.6;
-    }
-    .hint {
-      font-size: 14px;
-      color: #64748b;
+    h1 { font-size: 24px; margin-bottom: 12px; }
+    p { color: #94a3b8; margin-bottom: 16px; line-height: 1.6; }
+    .btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      padding: 16px 32px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 16px;
       margin-top: 24px;
+      cursor: pointer;
+      border: none;
     }
+    .hint { font-size: 14px; color: #64748b; margin-top: 16px; }
   </style>
 </head>
 <body>
@@ -66,19 +76,29 @@ serve(async (req) => {
       ${isSuccess ? '✓' : '✕'}
     </div>
     <h1>${isSuccess ? 'Payment Successful!' : 'Payment Cancelled'}</h1>
-    <p>
-      ${isSuccess 
-        ? 'Thank you for upgrading to VoxWarp Pro! Your account has been upgraded and you now have access to 50,000 tokens per month.' 
-        : 'Your payment was cancelled. No charges were made to your account.'}
-    </p>
-    <p class="hint">You can close this tab and return to the VoxWarp app.</p>
+    <p>${isSuccess 
+      ? 'Thank you for upgrading to VoxWarp Pro! You now have access to 50,000 tokens per month.' 
+      : 'Your payment was cancelled. No charges were made.'}</p>
+    <button class="btn" onclick="closeWindow()">Close & Return to App</button>
+    <p class="hint">Or just close this browser tab manually.</p>
   </div>
+  <script>
+    function closeWindow() {
+      window.close();
+      // Fallback: if window.close() doesn't work (blocked by browser)
+      setTimeout(function() {
+        document.body.innerHTML = '<div style="text-align:center;padding:40px;color:#94a3b8;">Please close this tab manually and return to VoxWarp.</div>';
+      }, 500);
+    }
+  </script>
 </body>
-</html>
-`
+</html>`
 
   return new Response(html, {
-    headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    headers: { 
+      ...corsHeaders,
+      'Content-Type': 'text/html; charset=utf-8',
+    },
     status: 200,
   })
 })

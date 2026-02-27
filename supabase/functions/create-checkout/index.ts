@@ -81,9 +81,6 @@ serve(async (req) => {
     }
 
     // 4. Create Checkout Session
-    // Storage-hosted pages redirect back to app via deep link
-    const storageUrl = `${supabaseUrl}/storage/v1/object/public/static`
-    
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: 'subscription',
@@ -93,8 +90,8 @@ serve(async (req) => {
           quantity: 1,
         },
       ],
-      success_url: `${storageUrl}/success.html`,
-      cancel_url: `${storageUrl}/cancel.html`,
+      success_url: 'https://whimsical-sopapillas-fd704d.netlify.app/success.html',
+      cancel_url: 'https://whimsical-sopapillas-fd704d.netlify.app/cancel.html',
       subscription_data: {
         metadata: {
           supabase_user_id: user.id,

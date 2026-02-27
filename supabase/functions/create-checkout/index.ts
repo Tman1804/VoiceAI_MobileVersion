@@ -81,8 +81,8 @@ serve(async (req) => {
     }
 
     // 4. Create Checkout Session
-    // Use our own payment-result page
-    const { successUrl, cancelUrl } = await req.json()
+    // Storage-hosted pages redirect back to app via deep link
+    const storageUrl = `${supabaseUrl}/storage/v1/object/public/static`
     
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -93,8 +93,8 @@ serve(async (req) => {
           quantity: 1,
         },
       ],
-      success_url: successUrl || `${supabaseUrl}/functions/v1/payment-result?status=success`,
-      cancel_url: cancelUrl || `${supabaseUrl}/functions/v1/payment-result?status=cancel`,
+      success_url: `${storageUrl}/success.html`,
+      cancel_url: `${storageUrl}/cancel.html`,
       subscription_data: {
         metadata: {
           supabase_user_id: user.id,

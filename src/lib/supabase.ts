@@ -121,7 +121,7 @@ export async function getUserUsage(userId?: string): Promise<UserUsage | null> {
     if (error.code === 'PGRST116') {
       return {
         tokens_used: 0,
-        tokens_limit: 2500, // Trial: 2500 tokens
+        tokens_limit: 5000, // Trial: 5000 tokens
         plan: 'trial',
       };
     }
@@ -129,7 +129,7 @@ export async function getUserUsage(userId?: string): Promise<UserUsage | null> {
     console.error('getUserUsage error:', error);
     return {
       tokens_used: 0,
-      tokens_limit: 2500,
+      tokens_limit: 5000,
       plan: 'trial',
     };
   }

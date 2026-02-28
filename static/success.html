@@ -25,27 +25,25 @@
     h1 { font-size: 24px; margin-bottom: 12px; }
     p { color: #94a3b8; margin-bottom: 16px; line-height: 1.6; }
     .hint { font-size: 14px; color: #64748b; margin-top: 24px; }
-    .spinner {
-      width: 24px; height: 24px; border: 3px solid #334155;
-      border-top-color: #6366f1; border-radius: 50%;
-      animation: spin 1s linear infinite; margin: 0 auto 16px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="icon">✓</div>
     <h1>Payment Successful!</h1>
-    <p>Thank you for upgrading to VoxWarp Pro!</p>
-    <div class="spinner"></div>
+    <p>Thank you for upgrading to VoxWarp Pro! You now have 50,000 tokens per month.</p>
     <p class="hint">Returning to app...</p>
   </div>
   <script>
-    // Redirect to app after short delay
+    // Try to close the browser tab/window after 2 seconds
     setTimeout(function() {
-      window.location.href = 'voxwarp://payment-success';
-    }, 1500);
+      window.close();
+      // Fallback: go back in history
+      setTimeout(function() {
+        history.go(-(history.length - 1));
+      }, 500);
+    }, 2000);
   </script>
 </body>
+</html>
 </html>

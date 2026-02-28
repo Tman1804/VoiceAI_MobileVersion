@@ -1,53 +1,78 @@
 # Privacy Policy for VoxWarp
 
-**Last updated:** February 15, 2026
+**Last updated:** February 2026
 
 ## Overview
 
 VoxWarp is a voice recording and transcription application. This privacy policy explains how we handle your data.
 
-## Data Collection
+## Data We Collect
+
+### Account Information
+- Email address (for account creation and login)
+- Google account info if using Google Sign-In (email, name)
+- Account credentials are managed securely via Supabase Auth
 
 ### Audio Recordings
 - Audio is recorded only when you actively press the record button
-- Recordings are temporarily stored in device memory during processing
-- Audio is immediately sent to OpenAI's servers for transcription
-- **We do not store your audio recordings on any server**
+- Recordings are sent to our secure server for AI processing
+- Audio is processed immediately and not stored long-term
+- Transcription results are stored in your account history
 
-### OpenAI API Key
-- You provide your own OpenAI API key
-- The API key is stored locally on your device only
-- We never transmit your API key to any server other than OpenAI
+### Usage Data
+- Token usage (tracking your AI processing consumption)
+- Subscription status
+- Recording history metadata (timestamp, duration, mode used)
 
-### Transcribed Text
-- Transcription results are displayed in the app
-- Text may be copied to your clipboard at your request
-- **We do not store or collect your transcriptions**
+### Payment Information
+- Payments are processed by Stripe
+- We do not store credit card numbers or payment details
+- Stripe handles all payment data according to their privacy policy
+
+## How We Use Your Data
+
+- To provide transcription and AI enrichment services
+- To track and display your token usage
+- To manage your subscription
+- To store your recording history
+- To improve the service
 
 ## Third-Party Services
 
+### Supabase
+We use Supabase for authentication, database, and backend services. Your account data and usage history are stored on Supabase infrastructure. See [Supabase Privacy Policy](https://supabase.com/privacy).
+
 ### OpenAI
-This app uses OpenAI's Whisper API for transcription and GPT for text enrichment. When you use these features, your audio and text are processed according to [OpenAI's Privacy Policy](https://openai.com/privacy/).
+Audio and text are processed using OpenAI's APIs (Whisper for transcription, GPT for enrichment). See [OpenAI Privacy Policy](https://openai.com/privacy/).
 
-## Data Storage
+### Stripe
+Payment processing is handled by Stripe. See [Stripe Privacy Policy](https://stripe.com/privacy).
 
-- All app settings are stored locally on your device
-- No personal data is transmitted to our servers (we don't have any)
-- No analytics or tracking is implemented
+## Data Storage & Security
 
-## Permissions
+- Account data is stored on Supabase (EU region)
+- All data transmission uses HTTPS encryption
+- Passwords are hashed and never stored in plain text
+- We implement industry-standard security practices
 
-### Microphone
-Required to record audio for transcription. The app only accesses the microphone when you initiate recording.
+## Data Retention
 
-### Internet
-Required to communicate with OpenAI's API for transcription and text enrichment.
+- Account data is kept while your account is active
+- Recording history is stored indefinitely until you delete it
+- Deleted accounts and associated data are removed within 30 days
 
-## Data Security
+## Your Rights
 
-- Your API key is stored in the app's private storage
-- All communication with OpenAI uses HTTPS encryption
-- No data is shared with third parties beyond OpenAI's API
+You have the right to:
+- Access your personal data
+- Delete your account and all associated data
+- Export your recording history
+- Opt out of marketing communications (we don't send any)
+
+### How to Exercise Your Rights
+- Delete recordings from the history screen in the app
+- Delete your account by contacting us
+- Request data export by contacting us
 
 ## Children's Privacy
 
@@ -61,9 +86,13 @@ We may update this privacy policy from time to time. Changes will be reflected i
 
 For questions about this privacy policy, please open an issue on our [GitHub repository](https://github.com/Tman1804/VoiceAI_MobileVersion/issues).
 
-## Your Rights
+## GDPR (EU Users)
 
-You have full control over your data:
-- Delete the app to remove all locally stored data
-- Revoke your OpenAI API key at any time through OpenAI's dashboard
-- Clear app data through your device settings
+If you are in the European Union, you have additional rights under GDPR:
+- Right to access, rectify, or erase your data
+- Right to restrict or object to processing
+- Right to data portability
+- Right to lodge a complaint with a supervisory authority
+
+Data Controller: VoxWarp Development Team  
+Contact: Via GitHub Issues

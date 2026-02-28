@@ -94,7 +94,7 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
     const timeout = setTimeout(() => {
       clearInterval(pollInterval);
       setGoogleLoading(false);
-      setError('Google-Login Timeout. Bitte versuche es erneut.');
+      setError('Google login timeout. Please try again.');
     }, 60000);
 
     return () => {
@@ -115,7 +115,7 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
         onSuccess();
       } else {
         await signUp(email, password);
-        setSuccess('Bestätigungs-Email gesendet! Bitte prüfe dein Postfach.');
+        setSuccess('Confirmation email sent! Please check your inbox.');
         setIsLogin(true);
       }
     } catch (err: any) {
@@ -146,7 +146,7 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
             <Mic className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white tracking-tight">VoxWarp</h1>
-          <p className="text-slate-400 mt-2">Sprache zu Text mit KI</p>
+          <p className="text-slate-400 mt-2">Voice to Text with AI</p>
         </div>
 
         {/* Auth Card */}
@@ -161,7 +161,7 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
                   : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
               }`}
             >
-              Anmelden
+              Sign In
             </button>
             <button
               onClick={() => { setIsLogin(false); setError(null); }}
@@ -171,7 +171,7 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
                   : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
               }`}
             >
-              Registrieren
+              Sign Up
             </button>
           </div>
 
@@ -193,14 +193,14 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email Input */}
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-300">E-Mail</label>
+              <label className="block text-sm font-medium text-slate-300">Email</label>
               <div className="relative group">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 transition-colors group-focus-within:text-primary-400" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@beispiel.de"
+                  placeholder="name@example.com"
                   required
                   className="w-full pl-12 pr-4 py-3.5 glass-card-darker border border-slate-700/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all"
                 />
@@ -209,7 +209,7 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
 
             {/* Password Input */}
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-300">Passwort</label>
+              <label className="block text-sm font-medium text-slate-300">Password</label>
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 transition-colors group-focus-within:text-primary-400" />
                 <input
@@ -238,7 +238,7 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
               className="btn-primary w-full py-3.5 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading && <Loader2 className="w-5 h-5 animate-spin" />}
-              {isLogin ? 'Anmelden' : 'Konto erstellen'}
+              {isLogin ? 'Sign In' : 'Create Account'}
             </button>
           </form>
 
@@ -248,7 +248,7 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
               <div className="w-full border-t border-slate-700/50"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 glass-card text-slate-500 rounded-full">oder</span>
+              <span className="px-4 glass-card text-slate-500 rounded-full">or</span>
             </div>
           </div>
 
@@ -268,16 +268,16 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
               </svg>
             )}
-            Mit Google {isLogin ? 'anmelden' : 'registrieren'}
+            {isLogin ? 'Sign in' : 'Sign up'} with Google
           </button>
 
           {/* Trial info */}
           {!isLogin && (
             <div className="mt-5 text-center p-3 glass-card-darker rounded-xl">
               <p className="text-sm text-slate-400">
-                🎁 Nach der Registrierung erhältst du{' '}
-                <span className="text-gradient font-semibold">2.500 Tokens</span>{' '}
-                kostenlos!
+                🎁 Start with{' '}
+                <span className="text-gradient font-semibold">5,000 free tokens</span>{' '}
+                to try VoxWarp!
               </p>
             </div>
           )}
@@ -285,10 +285,10 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
 
         {/* Footer */}
         <p className="mt-8 text-center text-xs text-slate-500">
-          Mit der Anmeldung akzeptierst du unsere{' '}
-          <span className="text-slate-400 hover:text-white cursor-pointer transition-colors">Nutzungsbedingungen</span>{' '}
-          und{' '}
-          <span className="text-slate-400 hover:text-white cursor-pointer transition-colors">Datenschutzerklärung</span>.
+          By signing in you agree to our{' '}
+          <span className="text-slate-400 hover:text-white cursor-pointer transition-colors">Terms of Service</span>{' '}
+          and{' '}
+          <span className="text-slate-400 hover:text-white cursor-pointer transition-colors">Privacy Policy</span>.
         </p>
       </div>
     </div>
@@ -297,19 +297,19 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
 
 function translateError(message: string): string {
   if (message.includes('Invalid login credentials')) {
-    return 'E-Mail oder Passwort falsch.';
+    return 'Invalid email or password.';
   }
   if (message.includes('Email not confirmed')) {
-    return 'Bitte bestätige zuerst deine E-Mail-Adresse.';
+    return 'Please confirm your email address first.';
   }
   if (message.includes('User already registered')) {
-    return 'Diese E-Mail ist bereits registriert. Bitte melde dich an.';
+    return 'This email is already registered. Please sign in.';
   }
   if (message.includes('Password should be')) {
-    return 'Passwort muss mindestens 6 Zeichen haben.';
+    return 'Password must be at least 6 characters.';
   }
   if (message.includes('rate limit')) {
-    return 'Zu viele Versuche. Bitte warte kurz.';
+    return 'Too many attempts. Please wait.';
   }
   return message;
 }

@@ -1,7 +1,7 @@
 # Terms of Service
 
 **VoxWarp - Voice Note AI**  
-*Last updated: January 2025*
+*Last updated: February 2026*
 
 ## Acceptance of Terms
 
@@ -11,26 +11,41 @@ By downloading, installing, or using VoxWarp ("the App"), you agree to these Ter
 
 VoxWarp is a voice recording application that:
 - Records audio using your device's microphone
-- Sends audio to OpenAI's API for transcription and AI processing
-- Displays results and allows copying/sharing
+- Transcribes audio using AI (OpenAI Whisper)
+- Enriches transcriptions with AI processing (summarization, action items, etc.)
+- Stores transcription history linked to your account
 
-## Requirements
+## Account Registration
 
-To use VoxWarp, you need:
-- A compatible device (Android, Windows, macOS, or Linux)
-- Your own OpenAI API key
-- An active internet connection for AI features
+To use VoxWarp, you must:
+- Create an account using email/password or Google Sign-In
+- Provide accurate account information
+- Keep your login credentials secure
+- Be at least 13 years old
 
-## OpenAI API Usage
+## Subscription Plans
 
-### Your API Key
-- You must provide your own valid OpenAI API key
-- You are responsible for all usage and costs associated with your API key
-- Keep your API key confidential and secure
-- Do not share API keys or use keys belonging to others without authorization
+### Free Trial
+- New users receive 5,000 tokens to try VoxWarp
+- Trial tokens do not expire
+- No payment information required
 
-### OpenAI Terms
-Your use of OpenAI services through this App is subject to [OpenAI's Terms of Use](https://openai.com/terms). You agree to comply with those terms.
+### Pro Plan (€3.99/month)
+- 50,000 tokens per month
+- All AI enrichment modes
+- Tokens reset monthly on subscription renewal
+
+### Token Usage
+- Tokens are consumed based on audio length and AI processing
+- Unused tokens do not roll over to the next month (Pro plan)
+- Token usage is tracked and displayed in the app
+
+## Payment Terms
+
+- Payments are processed securely via Stripe
+- Subscriptions auto-renew monthly until cancelled
+- Cancel anytime through the app or Stripe customer portal
+- No refunds for partial months
 
 ## Acceptable Use
 
@@ -40,6 +55,7 @@ You agree NOT to use VoxWarp to:
 - Violate any applicable laws or regulations
 - Infringe on the rights of others
 - Attempt to reverse engineer, modify, or tamper with the App
+- Share accounts or circumvent usage limits
 
 ## Intellectual Property
 
@@ -79,7 +95,7 @@ We reserve the right to modify these Terms at any time. Continued use of the App
 
 ## Termination
 
-You may stop using the App at any time. We may terminate or suspend access to the App without notice for violations of these Terms.
+You may delete your account at any time. We may terminate or suspend access to the App without notice for violations of these Terms.
 
 ## Governing Law
 

@@ -9,135 +9,135 @@ interface LegalModalProps {
   type: 'privacy' | 'terms';
 }
 
-const PRIVACY_POLICY = `# Datenschutz
+const PRIVACY_POLICY = `# Privacy Policy
 
-**Letzte Aktualisierung:** Februar 2026
+**Last updated:** February 2026
 
-## Überblick
+## Overview
 
-VoxWarp ist eine Sprachaufnahme- und Transkriptions-App. Diese Datenschutzerklärung erklärt, wie wir mit Ihren Daten umgehen.
+VoxWarp is a voice recording and transcription application. This privacy policy explains how we handle your data.
 
-## Datenerfassung
+## Data We Collect
 
-### Audioaufnahmen
-• Audio wird nur aufgezeichnet, wenn Sie aktiv die Aufnahmetaste drücken
-• Aufnahmen werden temporär im Gerätespeicher verarbeitet
-• Audio wird direkt an OpenAI-Server zur Transkription gesendet
-• **Wir speichern Ihre Audioaufnahmen auf keinem Server**
+### Account Information
+• Email address (for account creation and login)
+• Google account info if using Google Sign-In
+• Account credentials are managed securely via Supabase Auth
 
-### OpenAI API-Schlüssel
-• Sie stellen Ihren eigenen OpenAI API-Schlüssel bereit
-• Der API-Schlüssel wird nur lokal auf Ihrem Gerät gespeichert
-• Wir übertragen Ihren API-Schlüssel an keinen anderen Server als OpenAI
+### Audio Recordings
+• Audio is recorded only when you actively press the record button
+• Recordings are sent to our secure server for AI processing
+• Audio is processed immediately and not stored long-term
+• Transcription results are stored in your account history
 
-### Transkribierter Text
-• Transkriptionsergebnisse werden in der App angezeigt
-• Text kann auf Ihren Wunsch in die Zwischenablage kopiert werden
-• **Wir speichern oder sammeln Ihre Transkriptionen nicht**
+### Usage Data
+• Token usage (tracking your AI processing consumption)
+• Subscription status
+• Recording history metadata
 
-## Drittanbieter-Dienste
+### Payment Information
+• Payments are processed by Stripe
+• We do not store credit card numbers or payment details
+
+## Third-Party Services
+
+### Supabase
+We use Supabase for authentication, database, and backend services.
 
 ### OpenAI
-Diese App nutzt OpenAIs Whisper API für Transkription und GPT für Textverarbeitung. Ihre Daten werden gemäß OpenAIs Datenschutzrichtlinie verarbeitet.
+Audio and text are processed using OpenAI's APIs (Whisper for transcription, GPT for enrichment).
 
-## Datenspeicherung
+### Stripe
+Payment processing is handled by Stripe.
 
-• Alle App-Einstellungen werden lokal auf Ihrem Gerät gespeichert
-• Keine persönlichen Daten werden an unsere Server übertragen (wir haben keine)
-• Keine Analysen oder Tracking implementiert
+## Data Security
 
-## Berechtigungen
+• All data transmission uses HTTPS encryption
+• Passwords are hashed and never stored in plain text
+• We implement industry-standard security practices
 
-### Mikrofon
-Erforderlich zur Audioaufnahme für die Transkription. Die App greift nur auf das Mikrofon zu, wenn Sie eine Aufnahme starten.
+## Your Rights
 
-### Internet
-Erforderlich für die Kommunikation mit OpenAIs API.
+You have full control over your data:
+• Delete recordings from the history screen
+• Delete your account and all associated data
+• Request data export by contacting us`;
 
-## Datensicherheit
-
-• Ihr API-Schlüssel wird im privaten Speicher der App gespeichert
-• Alle Kommunikation mit OpenAI verwendet HTTPS-Verschlüsselung
-• Keine Daten werden mit Dritten außer OpenAI geteilt
-
-## Ihre Rechte
-
-Sie haben volle Kontrolle über Ihre Daten:
-• Löschen Sie die App, um alle lokal gespeicherten Daten zu entfernen
-• Widerrufen Sie Ihren OpenAI API-Schlüssel jederzeit über das OpenAI-Dashboard
-• Löschen Sie App-Daten über Ihre Geräteeinstellungen`;
-
-const TERMS_OF_SERVICE = `# Nutzungsbedingungen
+const TERMS_OF_SERVICE = `# Terms of Service
 
 **VoxWarp**
-*Letzte Aktualisierung: Februar 2026*
+*Last updated: February 2026*
 
-## Annahme der Bedingungen
+## Acceptance of Terms
 
-Durch das Herunterladen, Installieren oder Nutzen von VoxWarp stimmen Sie diesen Nutzungsbedingungen zu. Wenn Sie nicht zustimmen, nutzen Sie die App nicht.
+By downloading, installing, or using VoxWarp, you agree to these Terms of Service. If you do not agree, do not use the App.
 
-## Beschreibung des Dienstes
+## Description of Service
 
-VoxWarp ist eine Sprachaufnahme-Anwendung, die:
-• Audio über das Mikrofon Ihres Geräts aufzeichnet
-• Audio an OpenAIs API zur Transkription und KI-Verarbeitung sendet
-• Ergebnisse anzeigt und Kopieren/Teilen ermöglicht
+VoxWarp is a voice recording application that:
+• Records audio using your device's microphone
+• Transcribes audio using AI (OpenAI Whisper)
+• Enriches transcriptions with AI processing
+• Stores transcription history linked to your account
 
-## Voraussetzungen
+## Account Registration
 
-Zur Nutzung von VoxWarp benötigen Sie:
-• Ein kompatibles Gerät (Android, Windows, macOS oder Linux)
-• Ihren eigenen OpenAI API-Schlüssel
-• Eine aktive Internetverbindung für KI-Funktionen
+To use VoxWarp, you must:
+• Create an account using email/password or Google Sign-In
+• Provide accurate account information
+• Keep your login credentials secure
+• Be at least 13 years old
 
-## OpenAI API-Nutzung
+## Subscription Plans
 
-### Ihr API-Schlüssel
-• Sie müssen Ihren eigenen gültigen OpenAI API-Schlüssel bereitstellen
-• Sie sind für alle Nutzungen und Kosten Ihres API-Schlüssels verantwortlich
-• Halten Sie Ihren API-Schlüssel vertraulich und sicher
-• Teilen Sie keine API-Schlüssel oder nutzen Sie fremde Schlüssel ohne Berechtigung
+### Free Trial
+• New users receive 5,000 tokens to try VoxWarp
+• Trial tokens do not expire
+• No payment information required
 
-## Akzeptable Nutzung
+### Pro Plan (€3.99/month)
+• 50,000 tokens per month
+• All AI enrichment modes
+• Tokens reset monthly on subscription renewal
 
-Sie stimmen zu, VoxWarp NICHT zu nutzen für:
-• Aufnahme von Gesprächen ohne Einwilligung, wo gesetzlich erforderlich
-• Verarbeitung illegaler, schädlicher oder verbotener Inhalte
-• Verletzung geltender Gesetze oder Vorschriften
-• Verletzung der Rechte anderer
+## Acceptable Use
 
-## Haftungsausschluss
+You agree NOT to use VoxWarp to:
+• Record conversations without consent where required by law
+• Process illegal, harmful, or prohibited content
+• Violate any applicable laws or regulations
+• Share accounts or circumvent usage limits
 
-### "WIE BESEHEN"-Basis
-DIE APP WIRD "WIE BESEHEN" OHNE GARANTIEN JEGLICHER ART BEREITGESTELLT, AUSDRÜCKLICH ODER STILLSCHWEIGEND.
+## Disclaimers
 
-### Keine Garantien
-Wir garantieren nicht:
-• Genauigkeit von Transkriptionen oder KI-Verarbeitung
-• Kontinuierlichen, unterbrechungsfreien oder sicheren Zugang
-• Dass die App Ihre spezifischen Anforderungen erfüllt
-• Dass Ergebnisse fehlerfrei sind
+THE APP IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND.
 
-### KI-Einschränkungen
-KI-generierte Inhalte können Fehler oder unangemessene Inhalte enthalten. Überprüfen Sie KI-Ausgaben immer, bevor Sie sich darauf verlassen.
+### No Guarantees
+We do not guarantee:
+• Accuracy of transcriptions or AI processing
+• Continuous, uninterrupted, or secure access
+• That results will be error-free
 
-## Haftungsbeschränkung
+### AI Limitations
+AI-generated content may contain errors. Always review and verify AI outputs before relying on them.
 
-IM MAXIMAL GESETZLICH ZULÄSSIGEN UMFANG HAFTEN DIE ENTWICKLER VON VOXWARP NICHT FÜR INDIREKTE, ZUFÄLLIGE, BESONDERE, FOLGE- ODER STRAFSCHÄDEN.
+## Limitation of Liability
 
-## Geltendes Recht
+THE DEVELOPERS OF VOXWARP SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES.
 
-Diese Bedingungen unterliegen dem Recht der Bundesrepublik Deutschland.
+## Governing Law
+
+These Terms shall be governed by the laws of Germany.
 
 ## Open Source
 
-VoxWarp ist Open-Source-Software unter der MIT-Lizenz.`;
+VoxWarp is open source software under the MIT License.`;
 
 export function LegalModal({ isOpen, onClose, type }: LegalModalProps) {
   if (!isOpen) return null;
 
   const content = type === 'privacy' ? PRIVACY_POLICY : TERMS_OF_SERVICE;
-  const title = type === 'privacy' ? 'Datenschutz' : 'Nutzungsbedingungen';
+  const title = type === 'privacy' ? 'Privacy Policy' : 'Terms of Service';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
@@ -192,7 +192,7 @@ export function LegalModal({ isOpen, onClose, type }: LegalModalProps) {
             onClick={onClose}
             className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
           >
-            Verstanden
+            Got it
           </button>
         </div>
       </div>

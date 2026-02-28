@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, FileText, FileType, FileCode, Share2, Loader2 } from 'lucide-react';
+import { X, FileText, FileType, FileCode, Loader2, Copy, Check } from 'lucide-react';
 import { save } from '@tauri-apps/plugin-dialog';
 import { writeTextFile } from '@tauri-apps/plugin-fs';
 
@@ -12,13 +12,20 @@ interface ShareModalProps {
   title?: string;
 }
 
-type ExportFormat = 'pdf' | 'docx' | 'markdown' | 'share';
+type ExportFormat = 'pdf' | 'docx' | 'markdown' | 'copy';
 
 export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' }: ShareModalProps) {
   const [isExporting, setIsExporting] = useState(false);
   const [exportingFormat, setExportingFormat] = useState<ExportFormat | null>(null);
+  const [copied, setCopied] = useState(false);
 
   if (!isOpen) return null;
+
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
 
   const getTimestamp = () => {
     const now = new Date();
@@ -142,24 +149,18 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
     }
   };
 
-  const handleNativeShare = async () => {
+  const handleCopyToClipboard = async () => {
     setIsExporting(true);
-    setExportingFormat('share');
+    setExportingFormat('copy');
     try {
-      if (navigator.share) {
-        await navigator.share({
-          title: title,
-          text: content,
-        });
-      } else {
-        // Fallback to clipboard
-        await navigator.clipboard.writeText(content);
-      }
-      onClose();
+      await navigator.clipboard.writeText(content);
+      setCopied(true);
+      setTimeout(() => {
+        setCopied(false);
+        onClose();
+      }, 1000);
     } catch (error) {
-      if ((error as Error).name !== 'AbortError') {
-        console.error('Share failed:', error);
-      }
+      console.error('Copy failed:', error);
     } finally {
       setIsExporting(false);
       setExportingFormat(null);
@@ -168,57 +169,60 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
 
   const options = [
     {
+      id: 'markdown' as ExportFormat,
+      icon: FileCode,
+      label: 'Markdown',
+      description: 'Save as .md file',
+      onClick: handleExportMarkdown,
+    },
+    {
       id: 'pdf' as ExportFormat,
       icon: FileText,
       label: 'PDF',
-      description: 'Export as PDF document',
+      description: 'Save as PDF document',
       onClick: handleExportPDF,
     },
     {
       id: 'docx' as ExportFormat,
       icon: FileType,
       label: 'Word',
-      description: 'Export as Word document',
+      description: 'Save as Word document',
       onClick: handleExportDocx,
     },
     {
-      id: 'markdown' as ExportFormat,
-      icon: FileCode,
-      label: 'Markdown',
-      description: 'Export as .md file',
-      onClick: handleExportMarkdown,
-    },
-    {
-      id: 'share' as ExportFormat,
-      icon: Share2,
-      label: 'Share',
-      description: 'Share via other apps',
-      onClick: handleNativeShare,
+      id: 'copy' as ExportFormat,
+      icon: copied ? Check : Copy,
+      label: copied ? 'Copied!' : 'Copy',
+      description: 'Copy text to clipboard',
+      onClick: handleCopyToClipboard,
     },
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/70">
-      <div className="bg-slate-800 rounded-2xl w-full max-w-sm shadow-2xl animate-slideUp">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+      onClick={handleBackdropClick}
+    >
+      <div className="bg-slate-800 rounded-2xl w-[90%] max-w-sm mx-4 shadow-2xl max-h-[80vh] overflow-hidden">
         <div className="flex items-center justify-between p-4 border-b border-slate-700">
-          <h2 className="text-lg font-semibold text-white">Share</h2>
+          <h2 className="text-lg font-semibold text-white">Export</h2>
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+            className="p-2 hover:bg-slate-700 rounded-lg transition-colors active:bg-slate-600"
           >
             <X className="w-5 h-5 text-slate-400" />
           </button>
         </div>
         
-        <div className="p-4 space-y-2">
+        <div className="p-4 space-y-2 overflow-y-auto">
           {options.map((option) => (
             <button
               key={option.id}
               onClick={option.onClick}
               disabled={isExporting}
-              className="w-full flex items-center gap-4 p-4 rounded-xl bg-slate-700/50 hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center gap-4 p-4 rounded-xl bg-slate-700/50 hover:bg-slate-700 active:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <div className="w-10 h-10 rounded-full bg-primary-600/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-primary-600/20 flex items-center justify-center flex-shrink-0">
                 {isExporting && exportingFormat === option.id ? (
                   <Loader2 className="w-5 h-5 text-primary-400 animate-spin" />
                 ) : (

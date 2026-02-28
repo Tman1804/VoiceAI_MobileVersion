@@ -44,7 +44,7 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
       // Get PDF as blob
       const pdfBlob = doc.output('blob');
       const pdfBuffer = await pdfBlob.arrayBuffer();
-      const pdfBase64 = btoa(String.fromCharCode(...new Uint8Array(pdfBuffer)));
+      const pdfBase64 = btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(pdfBuffer))));
       
       const filePath = await save({
         defaultPath: `voxwarp-${getTimestamp()}.pdf`,
@@ -98,7 +98,7 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
       
       const blob = await Packer.toBlob(doc);
       const buffer = await blob.arrayBuffer();
-      const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+      const base64 = btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(buffer))));
       
       const filePath = await save({
         defaultPath: `voxwarp-${getTimestamp()}.docx`,

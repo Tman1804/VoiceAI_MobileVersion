@@ -1,3 +1,8 @@
+use tauri::Manager;
+
+// Note: share_text is implemented as Android Kotlin plugin (SharePlugin.kt)
+// The Rust side just needs to declare the command signature for the invoke handler
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let mut builder = tauri::Builder::default()

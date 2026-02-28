@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, FileText, FileType, FileCode, Loader2, Copy, Check } from 'lucide-react';
+import { X, FileText, FileType, FileCode, Loader2, Share2 } from 'lucide-react';
 import { save } from '@tauri-apps/plugin-dialog';
 import { writeTextFile } from '@tauri-apps/plugin-fs';
 
@@ -12,7 +12,7 @@ interface ShareModalProps {
   title?: string;
 }
 
-type ExportFormat = 'pdf' | 'docx' | 'markdown' | 'copy';
+type ExportFormat = 'share' | 'pdf' | 'docx' | 'markdown';
 
 export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' }: ShareModalProps) {
   const [isExporting, setIsExporting] = useState(false);
@@ -149,10 +149,21 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
     }
   };
 
-  const handleCopyToClipboard = async () => {
+  const handleNativeShare = async () => {
     setIsExporting(true);
-    setExportingFormat('copy');
+    setExportingFormat('share');
     try {
+      // Use Web Share API - works on Android WebView
+      if (navigator.share) {
+        await navigator.share({ 
+          title: title,
+          text: content 
+        });
+        onClose();
+        return;
+      }
+      
+      // Fallback: copy to clipboard
       await navigator.clipboard.writeText(content);
       setCopied(true);
       setTimeout(() => {
@@ -160,7 +171,21 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
         onClose();
       }, 1000);
     } catch (error) {
-      console.error('Copy failed:', error);
+      if ((error as Error).name !== 'AbortError') {
+        // User cancelled share, that's OK
+        console.error('Share failed:', error);
+        // Fallback to clipboard
+        try {
+          await navigator.clipboard.writeText(content);
+          setCopied(true);
+          setTimeout(() => {
+            setCopied(false);
+            onClose();
+          }, 1000);
+        } catch {
+          console.error('Clipboard fallback failed');
+        }
+      }
     } finally {
       setIsExporting(false);
       setExportingFormat(null);
@@ -168,6 +193,13 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
   };
 
   const options = [
+    {
+      id: 'share' as ExportFormat,
+      icon: Share2,
+      label: 'Share',
+      description: 'Share via apps',
+      onClick: handleNativeShare,
+    },
     {
       id: 'markdown' as ExportFormat,
       icon: FileCode,
@@ -188,13 +220,6 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
       label: 'Word',
       description: 'Save as Word document',
       onClick: handleExportDocx,
-    },
-    {
-      id: 'copy' as ExportFormat,
-      icon: copied ? Check : Copy,
-      label: copied ? 'Copied!' : 'Copy',
-      description: 'Copy text to clipboard',
-      onClick: handleCopyToClipboard,
     },
   ];
 

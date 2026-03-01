@@ -26,13 +26,13 @@ export function SettingsPanel() {
         <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-slate-700 rounded-lg transition-colors">
           <ArrowLeft className="w-5 h-5 text-slate-400" />
         </button>
-        <h2 className="text-xl font-semibold text-white">Einstellungen</h2>
+        <h2 className="text-xl font-semibold text-white">Settings</h2>
       </div>
 
       <div className="space-y-5">
         {/* Output Language */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-300">Ausgabesprache</label>
+          <label className="block text-sm font-medium text-slate-300">Output Language</label>
           <select 
             value={localSettings.outputLanguage}
             onChange={(e) => setLocalSettings({ ...localSettings, outputLanguage: e.target.value as OutputLanguage })}
@@ -47,7 +47,7 @@ export function SettingsPanel() {
         {/* Toggles */}
         <div className="space-y-3 py-2">
           <label className="flex items-center justify-between cursor-pointer py-2">
-            <span className="text-white">Automatisch verarbeiten</span>
+            <span className="text-white">Auto-process</span>
             <div 
               className={`relative w-11 h-6 rounded-full transition-colors ${localSettings.autoEnrich ? 'bg-primary-600' : 'bg-slate-700'}`}
               onClick={() => setLocalSettings({ ...localSettings, autoEnrich: !localSettings.autoEnrich })}
@@ -57,7 +57,7 @@ export function SettingsPanel() {
           </label>
           
           <label className="flex items-center justify-between cursor-pointer py-2">
-            <span className="text-white">Automatisch kopieren</span>
+            <span className="text-white">Auto-copy to clipboard</span>
             <div 
               className={`relative w-11 h-6 rounded-full transition-colors ${localSettings.autoCopyToClipboard ? 'bg-primary-600' : 'bg-slate-700'}`}
               onClick={() => setLocalSettings({ ...localSettings, autoCopyToClipboard: !localSettings.autoCopyToClipboard })}
@@ -73,7 +73,7 @@ export function SettingsPanel() {
           className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-colors ${saved ? 'bg-green-600 text-white' : 'bg-primary-600 hover:bg-primary-700 text-white'}`}
         >
           <Save className="w-5 h-5" />
-          {saved ? 'Gespeichert!' : 'Speichern'}
+          {saved ? 'Saved!' : 'Save'}
         </button>
 
         {/* Divider */}
@@ -86,7 +86,7 @@ export function SettingsPanel() {
             >
               <div className="flex items-center gap-3">
                 <Shield className="w-4 h-4" />
-                <span>Datenschutz</span>
+                <span>Privacy Policy</span>
               </div>
               <ChevronRight className="w-4 h-4 text-slate-500" />
             </button>
@@ -96,7 +96,7 @@ export function SettingsPanel() {
             >
               <div className="flex items-center gap-3">
                 <FileText className="w-4 h-4" />
-                <span>Nutzungsbedingungen</span>
+                <span>Terms of Service</span>
               </div>
               <ChevronRight className="w-4 h-4 text-slate-500" />
             </button>

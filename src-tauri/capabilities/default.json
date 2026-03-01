@@ -20,14 +20,12 @@
     "fs:default",
     "fs:allow-read",
     "fs:allow-write",
-    {
-      "identifier": "fs:scope",
-      "allow": [
-        "$DOCUMENT/**",
-        "$DOWNLOAD/**",
-        "$APPDATA/**"
-      ]
-    },
+    "fs:allow-document-write",
+    "fs:allow-document-write-recursive",
+    "fs:allow-download-write",
+    "fs:allow-download-write-recursive",
+    "fs:allow-appdata-write",
+    "fs:allow-appdata-write-recursive",
     "shell:default",
     "shell:allow-open",
     "deep-link:default",

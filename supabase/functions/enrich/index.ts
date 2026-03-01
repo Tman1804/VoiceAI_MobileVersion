@@ -105,7 +105,7 @@ Passe die Struktur bei Bedarf an den Inhalt an. Lasse Abschnitte weg, wenn keine
     }
 
     // Check if mode is Pro-only
-    const proModes = ['blog-post', 'email-draft', 'interview']
+    const proModes = ['action-items', 'blog-post', 'email-draft', 'interview']
     if (proModes.includes(mode) && currentUsage.plan !== 'unlimited') {
       throw new Error('Dieser Modus ist nur für Pro-Nutzer verfügbar.')
     }

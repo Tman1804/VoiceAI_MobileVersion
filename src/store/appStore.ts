@@ -4,7 +4,7 @@ import { persist } from 'zustand/middleware';
 export type EnrichmentMode = 'summarize' | 'action-items' | 'meeting-notes' | 'clean-transcript' | 'custom' | 'blog-post' | 'email-draft' | 'interview';
 
 // Pro-only modes
-export const PRO_ENRICHMENT_MODES: EnrichmentMode[] = ['blog-post', 'email-draft', 'interview'];
+export const PRO_ENRICHMENT_MODES: EnrichmentMode[] = ['action-items', 'blog-post', 'email-draft', 'interview'];
 
 export type OutputLanguage = 'auto' | 'de' | 'en' | 'fr' | 'es' | 'it' | 'pt' | 'nl' | 'pl' | 'ru' | 'ja' | 'zh' | 'ko';
 

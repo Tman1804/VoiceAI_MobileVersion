@@ -16,7 +16,7 @@ import { useDeepLink } from '@/hooks/useDeepLink';
 import { Settings, Mic, X, AlertCircle, ChevronDown, Clock, LogOut, Loader2, Lock, Crown } from 'lucide-react';
 import { getEnrichmentModeLabel } from '@/lib/enrichmentService';
 
-const ENRICHMENT_MODES: EnrichmentMode[] = ['clean-transcript', 'summarize', 'action-items', 'meeting-notes'];
+const ENRICHMENT_MODES: EnrichmentMode[] = ['clean-transcript', 'summarize', 'meeting-notes'];
 const ALL_MODES: EnrichmentMode[] = [...ENRICHMENT_MODES, ...PRO_ENRICHMENT_MODES];
 
 export default function Home() {

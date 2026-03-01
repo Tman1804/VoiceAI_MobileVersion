@@ -75,12 +75,30 @@ export async function enrichTranscript(
 }
 
 export function getEnrichmentModeLabel(mode: EnrichmentMode): string {
-  const labels: Record<EnrichmentMode, string> = { 'summarize': 'Summarize', 'action-items': 'Extract Action Items', 'meeting-notes': 'Meeting Notes', 'clean-transcript': 'Clean Transcript', 'custom': 'Custom Prompt' };
+  const labels: Record<EnrichmentMode, string> = { 
+    'summarize': 'Summarize', 
+    'action-items': 'Extract Action Items', 
+    'meeting-notes': 'Meeting Notes', 
+    'clean-transcript': 'Clean Transcript', 
+    'custom': 'Custom Prompt',
+    'blog-post': 'Blog Post',
+    'email-draft': 'Email',
+    'interview': 'Interview'
+  };
   return labels[mode];
 }
 
 export function getEnrichmentModeDescription(mode: EnrichmentMode): string {
-  const descriptions: Record<EnrichmentMode, string> = { 'summarize': 'Create a concise summary', 'action-items': 'Extract tasks as a list', 'meeting-notes': 'Format as meeting notes', 'clean-transcript': 'Clean up filler words', 'custom': 'Use your own prompt' };
+  const descriptions: Record<EnrichmentMode, string> = { 
+    'summarize': 'Create a concise summary', 
+    'action-items': 'Extract tasks as a list', 
+    'meeting-notes': 'Format as meeting notes', 
+    'clean-transcript': 'Clean up filler words', 
+    'custom': 'Use your own prompt',
+    'blog-post': 'Transform into a blog article',
+    'email-draft': 'Create a professional email',
+    'interview': 'Extract insights & action items'
+  };
   return descriptions[mode];
 }
 

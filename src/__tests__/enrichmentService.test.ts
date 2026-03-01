@@ -26,11 +26,23 @@ describe('enrichmentService', () => {
     it('returns correct label for custom mode', () => {
       expect(getEnrichmentModeLabel('custom')).toBe('Custom Prompt');
     });
+
+    it('returns correct label for blog-post mode', () => {
+      expect(getEnrichmentModeLabel('blog-post')).toBe('Blog Post');
+    });
+
+    it('returns correct label for email-draft mode', () => {
+      expect(getEnrichmentModeLabel('email-draft')).toBe('Email');
+    });
+
+    it('returns correct label for interview mode', () => {
+      expect(getEnrichmentModeLabel('interview')).toBe('Interview');
+    });
   });
 
   describe('getEnrichmentModeDescription', () => {
     it('returns correct description for all modes', () => {
-      const modes: EnrichmentMode[] = ['summarize', 'action-items', 'meeting-notes', 'clean-transcript', 'custom'];
+      const modes: EnrichmentMode[] = ['summarize', 'action-items', 'meeting-notes', 'clean-transcript', 'custom', 'blog-post', 'email-draft', 'interview'];
       
       modes.forEach(mode => {
         const description = getEnrichmentModeDescription(mode);

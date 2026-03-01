@@ -75,6 +75,39 @@ serve(async (req) => {
       'summarize': 'Fasse den folgenden Text prägnant zusammen. Behalte die wichtigsten Punkte bei.',
       'action-items': 'Extrahiere alle Aufgaben und Action Items aus dem Text als Liste.',
       'meeting-notes': 'Formatiere den Text als strukturierte Meeting-Notizen mit Überschriften, Teilnehmern falls erwähnt, Agenda-Punkten und Entscheidungen.',
+      // Pro-only modes
+      'blog-post': 'Wandle diesen Text in einen gut strukturierten Blog-Artikel um. Füge eine packende Einleitung, klare Zwischenüberschriften, gut lesbare Absätze und ein abschließendes Fazit hinzu. Der Stil soll informativ aber unterhaltsam sein.',
+      'email-draft': 'Erstelle aus diesem Text eine professionelle E-Mail. Füge eine passende Betreffzeile, Anrede, klar strukturierten Hauptteil und professionellen Gruß hinzu. Halte den Ton geschäftlich aber freundlich.',
+      'interview': `Extrahiere die Kernerkenntnisse aus diesem Interview. Strukturiere die Ausgabe wie folgt:
+
+## Interview Overview
+- **Interviewee:** [Name/Rolle falls erkennbar]
+- **Dauer/Datum:** [falls erkennbar]
+- **Format:** [z.B. 1:1, Panel, etc.]
+- **Zweck:** [Hauptthema des Interviews]
+
+## Interviewee Profile
+[Kurze Beschreibung der befragten Person basierend auf dem Inhalt]
+
+## Key Insights
+[Die wichtigsten Erkenntnisse als nummerierte Liste]
+
+## Opportunity List
+[Identifizierte Chancen, Ideen oder Möglichkeiten]
+
+## Action Items
+[Konkrete nächste Schritte oder To-Dos]
+
+## Open Questions
+[Offene Fragen die weiterer Klärung bedürfen]
+
+Passe die Struktur bei Bedarf an den Inhalt an. Lasse Abschnitte weg, wenn keine relevanten Informationen vorhanden sind.`,
+    }
+
+    // Check if mode is Pro-only
+    const proModes = ['blog-post', 'email-draft', 'interview']
+    if (proModes.includes(mode) && currentUsage.plan !== 'unlimited') {
+      throw new Error('Dieser Modus ist nur für Pro-Nutzer verfügbar.')
     }
 
     const languageInstructions: Record<string, string> = {

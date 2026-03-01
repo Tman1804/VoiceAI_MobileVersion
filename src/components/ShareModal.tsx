@@ -3,8 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, FileText, FileType, FileCode, Loader2, Share2 } from 'lucide-react';
-import { save } from '@tauri-apps/plugin-dialog';
-import { writeTextFile, writeFile } from '@tauri-apps/plugin-fs';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -32,6 +30,18 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
     return now.toISOString().slice(0, 19).replace(/[T:]/g, '-');
   };
 
+  // Helper function to download file using browser APIs
+  const downloadFile = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const handleExportPDF = async () => {
     setIsExporting(true);
     setExportingFormat('pdf');
@@ -48,19 +58,10 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
       const lines = doc.splitTextToSize(content, 170);
       doc.text(lines, 20, 35);
       
-      // Get PDF as Uint8Array
-      const pdfOutput = doc.output('arraybuffer');
-      const pdfBytes = new Uint8Array(pdfOutput);
-      
-      const filePath = await save({
-        defaultPath: `voxwarp-${getTimestamp()}.pdf`,
-        filters: [{ name: 'PDF', extensions: ['pdf'] }]
-      });
-      
-      if (filePath) {
-        await writeFile(filePath, pdfBytes);
-        onClose();
-      }
+      // Get PDF as blob and download
+      const pdfBlob = doc.output('blob');
+      downloadFile(pdfBlob, `voxwarp-${getTimestamp()}.pdf`);
+      onClose();
     } catch (error) {
       console.error('PDF export failed:', error);
     } finally {
@@ -95,18 +96,8 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
       });
       
       const blob = await Packer.toBlob(doc);
-      const buffer = await blob.arrayBuffer();
-      const docxBytes = new Uint8Array(buffer);
-      
-      const filePath = await save({
-        defaultPath: `voxwarp-${getTimestamp()}.docx`,
-        filters: [{ name: 'Word Document', extensions: ['docx'] }]
-      });
-      
-      if (filePath) {
-        await writeFile(filePath, docxBytes);
-        onClose();
-      }
+      downloadFile(blob, `voxwarp-${getTimestamp()}.docx`);
+      onClose();
     } catch (error) {
       console.error('DOCX export failed:', error);
     } finally {
@@ -120,20 +111,9 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
     setExportingFormat('markdown');
     try {
       const markdownContent = `# ${title}\n\n${content}`;
-      console.log('Exporting markdown, content length:', content.length);
-      
-      const filePath = await save({
-        defaultPath: `voxwarp-${getTimestamp()}.md`,
-        filters: [{ name: 'Markdown', extensions: ['md'] }]
-      });
-      
-      if (filePath && content) {
-        // Use TextEncoder for proper UTF-8 encoding
-        const encoder = new TextEncoder();
-        const bytes = encoder.encode(markdownContent);
-        await writeFile(filePath, bytes);
-        onClose();
-      }
+      const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
+      downloadFile(blob, `voxwarp-${getTimestamp()}.md`);
+      onClose();
     } catch (error) {
       console.error('Markdown export failed:', error);
     } finally {

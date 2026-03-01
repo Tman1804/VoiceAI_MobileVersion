@@ -32,13 +32,25 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
     return now.toISOString().slice(0, 19).replace(/[T:]/g, '-');
   };
 
-  // Helper function to save file using Tauri
-  const saveFile = async (data: Uint8Array, filename: string): Promise<boolean> => {
+  // Helper function to save file using Tauri with file picker
+  const saveFile = async (data: Uint8Array, filename: string, filter: { name: string; extensions: string[] }): Promise<boolean> => {
     try {
-      const { writeFile, BaseDirectory } = await import('@tauri-apps/plugin-fs');
-      // Write to app's document directory (accessible on Android)
-      await writeFile(filename, data, { baseDir: BaseDirectory.Document });
-      setExportSuccess(`Saved to Documents/${filename}`);
+      const { save } = await import('@tauri-apps/plugin-dialog');
+      const { writeFile } = await import('@tauri-apps/plugin-fs');
+      
+      // Show save dialog to let user choose location
+      const filePath = await save({
+        defaultPath: filename,
+        filters: [filter]
+      });
+      
+      if (!filePath) {
+        // User cancelled
+        return false;
+      }
+      
+      await writeFile(filePath, data);
+      setExportSuccess(`Saved successfully!`);
       setTimeout(() => {
         setExportSuccess(null);
         onClose();
@@ -72,7 +84,7 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
       // Get PDF as arraybuffer and save
       const pdfBuffer = doc.output('arraybuffer');
       const pdfBytes = new Uint8Array(pdfBuffer);
-      await saveFile(pdfBytes, `voxwarp-${getTimestamp()}.pdf`);
+      await saveFile(pdfBytes, `voxwarp-${getTimestamp()}.pdf`, { name: 'PDF', extensions: ['pdf'] });
     } catch (error) {
       console.error('PDF export failed:', error);
       setExportError(`PDF export failed: ${error}`);
@@ -112,7 +124,7 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
       const blob = await Packer.toBlob(doc);
       const buffer = await blob.arrayBuffer();
       const docxBytes = new Uint8Array(buffer);
-      await saveFile(docxBytes, `voxwarp-${getTimestamp()}.docx`);
+      await saveFile(docxBytes, `voxwarp-${getTimestamp()}.docx`, { name: 'Word Document', extensions: ['docx'] });
     } catch (error) {
       console.error('DOCX export failed:', error);
       setExportError(`DOCX export failed: ${error}`);
@@ -131,7 +143,7 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
       const markdownContent = `# ${title}\n\n${content}`;
       const encoder = new TextEncoder();
       const mdBytes = encoder.encode(markdownContent);
-      await saveFile(mdBytes, `voxwarp-${getTimestamp()}.md`);
+      await saveFile(mdBytes, `voxwarp-${getTimestamp()}.md`, { name: 'Markdown', extensions: ['md'] });
     } catch (error) {
       console.error('Markdown export failed:', error);
       setExportError(`Markdown export failed: ${error}`);

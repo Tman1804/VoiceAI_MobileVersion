@@ -219,50 +219,54 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
 
   return (
     <div 
-      className="fixed inset-0 z-[100] flex items-end justify-center"
-      style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-6"
+      style={{ backgroundColor: 'rgba(0,0,0,0.8)' }}
       onClick={onClose}
     >
       <div 
-        className="bg-slate-800 rounded-t-2xl w-full shadow-2xl"
+        className="bg-slate-800 rounded-2xl w-full max-w-xs shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Handle bar for visual affordance */}
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 bg-slate-600 rounded-full" />
-        </div>
-        
-        <div className="flex items-center justify-between px-4 py-2 border-b border-slate-700">
+        <div className="flex items-center justify-between p-4 border-b border-slate-700">
           <h2 className="text-lg font-semibold text-white">Export</h2>
           <button 
             onClick={onClose}
-            className="p-3 -mr-2 hover:bg-slate-700 rounded-lg transition-colors active:bg-slate-600"
+            className="p-2 hover:bg-slate-700 rounded-lg transition-colors active:bg-slate-600"
           >
             <X className="w-6 h-6 text-slate-400" />
           </button>
         </div>
         
-        <div className="p-4 space-y-2 pb-10">
+        <div className="p-3 space-y-2">
           {options.map((option) => (
             <button
               key={option.id}
               onClick={option.onClick}
               disabled={isExporting}
-              className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-700/50 hover:bg-slate-700 active:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-700/50 hover:bg-slate-700 active:bg-slate-600 transition-colors disabled:opacity-50"
             >
-              <div className="w-10 h-10 rounded-full bg-primary-600/20 flex items-center justify-center flex-shrink-0">
+              <div className="w-9 h-9 rounded-full bg-primary-600/20 flex items-center justify-center flex-shrink-0">
                 {isExporting && exportingFormat === option.id ? (
-                  <Loader2 className="w-5 h-5 text-primary-400 animate-spin" />
+                  <Loader2 className="w-4 h-4 text-primary-400 animate-spin" />
                 ) : (
-                  <option.icon className="w-5 h-5 text-primary-400" />
+                  <option.icon className="w-4 h-4 text-primary-400" />
                 )}
               </div>
               <div className="text-left">
-                <p className="text-white font-medium">{option.label}</p>
-                <p className="text-sm text-slate-400">{option.description}</p>
+                <p className="text-white font-medium text-sm">{option.label}</p>
+                <p className="text-xs text-slate-400">{option.description}</p>
               </div>
             </button>
           ))}
+        </div>
+        
+        <div className="p-3 pt-0">
+          <button
+            onClick={onClose}
+            className="w-full p-3 rounded-xl bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white font-medium transition-colors"
+          >
+            Cancel
+          </button>
         </div>
       </div>
     </div>

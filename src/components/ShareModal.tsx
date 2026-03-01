@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, FileText, FileType, FileCode, Loader2, Share2 } from 'lucide-react';
 import { save } from '@tauri-apps/plugin-dialog';
 import { writeTextFile } from '@tauri-apps/plugin-fs';
@@ -18,8 +19,13 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
   const [isExporting, setIsExporting] = useState(false);
   const [exportingFormat, setExportingFormat] = useState<ExportFormat | null>(null);
   const [copied, setCopied] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!isOpen || !mounted) return null;
 
   const getTimestamp = () => {
     const now = new Date();
@@ -217,15 +223,15 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
     },
   ];
 
-  return (
+  const modalContent = (
     <div 
-      className="fixed inset-0 z-[100] flex items-end justify-center"
+      className="fixed inset-0 z-[9999] flex items-end justify-center"
       style={{ backgroundColor: 'rgba(0,0,0,0.8)' }}
       onClick={onClose}
     >
       <div 
         className="bg-slate-800 rounded-t-2xl w-full shadow-2xl"
-        style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)', paddingBottom: '24px' }}
+        style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-center pt-3 pb-1">
@@ -276,4 +282,6 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

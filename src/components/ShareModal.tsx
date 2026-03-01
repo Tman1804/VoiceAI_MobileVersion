@@ -219,15 +219,20 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
 
   return (
     <div 
-      className="fixed inset-0 z-[100] flex items-center justify-center p-6"
+      className="fixed inset-0 z-[100] flex items-end justify-center"
       style={{ backgroundColor: 'rgba(0,0,0,0.8)' }}
       onClick={onClose}
     >
       <div 
-        className="bg-slate-800 rounded-2xl w-full max-w-xs shadow-2xl"
+        className="bg-slate-800 rounded-t-2xl w-full shadow-2xl"
+        style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)', paddingBottom: '24px' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-4 border-b border-slate-700">
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="w-10 h-1 bg-slate-600 rounded-full" />
+        </div>
+        
+        <div className="flex items-center justify-between px-4 py-2 border-b border-slate-700">
           <h2 className="text-lg font-semibold text-white">Export</h2>
           <button 
             onClick={onClose}
@@ -260,7 +265,7 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
           ))}
         </div>
         
-        <div className="p-3 pt-0">
+        <div className="px-3 pb-4">
           <button
             onClick={onClose}
             className="w-full p-3 rounded-xl bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white font-medium transition-colors"

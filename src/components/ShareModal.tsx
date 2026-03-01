@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, FileText, FileType, FileCode, Loader2, Share2 } from 'lucide-react';
+import { X, FileText, FileType, FileCode, Loader2, Share2, Check } from 'lucide-react';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -18,6 +18,8 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
   const [exportingFormat, setExportingFormat] = useState<ExportFormat | null>(null);
   const [copied, setCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState<string | null>(null);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -30,21 +32,30 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
     return now.toISOString().slice(0, 19).replace(/[T:]/g, '-');
   };
 
-  // Helper function to download file using browser APIs
-  const downloadFile = (blob: Blob, filename: string) => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  // Helper function to save file using Tauri
+  const saveFile = async (data: Uint8Array, filename: string): Promise<boolean> => {
+    try {
+      const { writeFile, BaseDirectory } = await import('@tauri-apps/plugin-fs');
+      // Write to app's document directory (accessible on Android)
+      await writeFile(filename, data, { baseDir: BaseDirectory.Document });
+      setExportSuccess(`Saved to Documents/${filename}`);
+      setTimeout(() => {
+        setExportSuccess(null);
+        onClose();
+      }, 1500);
+      return true;
+    } catch (error) {
+      console.error('Save failed:', error);
+      setExportError(`Export failed: ${error}`);
+      setTimeout(() => setExportError(null), 3000);
+      return false;
+    }
   };
 
   const handleExportPDF = async () => {
     setIsExporting(true);
     setExportingFormat('pdf');
+    setExportError(null);
     try {
       const { jsPDF } = await import('jspdf');
       const doc = new jsPDF();
@@ -58,12 +69,14 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
       const lines = doc.splitTextToSize(content, 170);
       doc.text(lines, 20, 35);
       
-      // Get PDF as blob and download
-      const pdfBlob = doc.output('blob');
-      downloadFile(pdfBlob, `voxwarp-${getTimestamp()}.pdf`);
-      onClose();
+      // Get PDF as arraybuffer and save
+      const pdfBuffer = doc.output('arraybuffer');
+      const pdfBytes = new Uint8Array(pdfBuffer);
+      await saveFile(pdfBytes, `voxwarp-${getTimestamp()}.pdf`);
     } catch (error) {
       console.error('PDF export failed:', error);
+      setExportError(`PDF export failed: ${error}`);
+      setTimeout(() => setExportError(null), 3000);
     } finally {
       setIsExporting(false);
       setExportingFormat(null);
@@ -73,6 +86,7 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
   const handleExportDocx = async () => {
     setIsExporting(true);
     setExportingFormat('docx');
+    setExportError(null);
     try {
       const { Document, Paragraph, TextRun, Packer } = await import('docx');
       
@@ -96,10 +110,13 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
       });
       
       const blob = await Packer.toBlob(doc);
-      downloadFile(blob, `voxwarp-${getTimestamp()}.docx`);
-      onClose();
+      const buffer = await blob.arrayBuffer();
+      const docxBytes = new Uint8Array(buffer);
+      await saveFile(docxBytes, `voxwarp-${getTimestamp()}.docx`);
     } catch (error) {
       console.error('DOCX export failed:', error);
+      setExportError(`DOCX export failed: ${error}`);
+      setTimeout(() => setExportError(null), 3000);
     } finally {
       setIsExporting(false);
       setExportingFormat(null);
@@ -109,13 +126,16 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
   const handleExportMarkdown = async () => {
     setIsExporting(true);
     setExportingFormat('markdown');
+    setExportError(null);
     try {
       const markdownContent = `# ${title}\n\n${content}`;
-      const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
-      downloadFile(blob, `voxwarp-${getTimestamp()}.md`);
-      onClose();
+      const encoder = new TextEncoder();
+      const mdBytes = encoder.encode(markdownContent);
+      await saveFile(mdBytes, `voxwarp-${getTimestamp()}.md`);
     } catch (error) {
       console.error('Markdown export failed:', error);
+      setExportError(`Markdown export failed: ${error}`);
+      setTimeout(() => setExportError(null), 3000);
     } finally {
       setIsExporting(false);
       setExportingFormat(null);
@@ -243,6 +263,19 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
             </button>
           ))}
         </div>
+        
+        {/* Success/Error feedback */}
+        {exportSuccess && (
+          <div className="mx-3 mb-2 p-3 rounded-xl bg-green-600/20 border border-green-600/30 flex items-center gap-2">
+            <Check className="w-4 h-4 text-green-400" />
+            <p className="text-green-400 text-sm">{exportSuccess}</p>
+          </div>
+        )}
+        {exportError && (
+          <div className="mx-3 mb-2 p-3 rounded-xl bg-red-600/20 border border-red-600/30">
+            <p className="text-red-400 text-sm">{exportError}</p>
+          </div>
+        )}
         
         <div className="px-3 pb-4">
           <button

@@ -20,6 +20,14 @@
     "fs:default",
     "fs:allow-read",
     "fs:allow-write",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        "$DOCUMENT/**",
+        "$DOWNLOAD/**",
+        "$APPDATA/**"
+      ]
+    },
     "shell:default",
     "shell:allow-open",
     "deep-link:default",

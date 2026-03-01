@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, FileText, FileType, FileCode, Loader2, Share2 } from 'lucide-react';
 import { save } from '@tauri-apps/plugin-dialog';
-import { writeTextFile } from '@tauri-apps/plugin-fs';
+import { writeTextFile, writeFile } from '@tauri-apps/plugin-fs';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -48,10 +48,9 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
       const lines = doc.splitTextToSize(content, 170);
       doc.text(lines, 20, 35);
       
-      // Get PDF as blob
-      const pdfBlob = doc.output('blob');
-      const pdfBuffer = await pdfBlob.arrayBuffer();
-      const pdfBase64 = btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(pdfBuffer))));
+      // Get PDF as Uint8Array
+      const pdfOutput = doc.output('arraybuffer');
+      const pdfBytes = new Uint8Array(pdfOutput);
       
       const filePath = await save({
         defaultPath: `voxwarp-${getTimestamp()}.pdf`,
@@ -59,15 +58,7 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
       });
       
       if (filePath) {
-        // Write as binary using base64
-        const binary = atob(pdfBase64);
-        const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) {
-          bytes[i] = binary.charCodeAt(i);
-        }
-        await writeTextFile(filePath, pdfBase64);
-        // Note: For proper binary write, would need different approach
-        // For now, let's use a workaround
+        await writeFile(filePath, pdfBytes);
         onClose();
       }
     } catch (error) {
@@ -105,7 +96,7 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
       
       const blob = await Packer.toBlob(doc);
       const buffer = await blob.arrayBuffer();
-      const base64 = btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(buffer))));
+      const docxBytes = new Uint8Array(buffer);
       
       const filePath = await save({
         defaultPath: `voxwarp-${getTimestamp()}.docx`,
@@ -113,9 +104,7 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
       });
       
       if (filePath) {
-        // For docx, we need to write binary - use workaround
-        await writeTextFile(filePath.replace('.docx', '.txt'), content);
-        // Show user that docx needs proper binary support
+        await writeFile(filePath, docxBytes);
         onClose();
       }
     } catch (error) {
@@ -131,14 +120,18 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
     setExportingFormat('markdown');
     try {
       const markdownContent = `# ${title}\n\n${content}`;
+      console.log('Exporting markdown, content length:', content.length);
       
       const filePath = await save({
         defaultPath: `voxwarp-${getTimestamp()}.md`,
         filters: [{ name: 'Markdown', extensions: ['md'] }]
       });
       
-      if (filePath) {
-        await writeTextFile(filePath, markdownContent);
+      if (filePath && content) {
+        // Use TextEncoder for proper UTF-8 encoding
+        const encoder = new TextEncoder();
+        const bytes = encoder.encode(markdownContent);
+        await writeFile(filePath, bytes);
         onClose();
       }
     } catch (error) {

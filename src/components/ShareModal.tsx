@@ -21,12 +21,6 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
 
   if (!isOpen) return null;
 
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
   const getTimestamp = () => {
     const now = new Date();
     return now.toISOString().slice(0, 19).replace(/[T:]/g, '-');
@@ -225,21 +219,30 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 pb-safe"
-      onClick={handleBackdropClick}
+      className="fixed inset-0 z-[100] flex items-end justify-center"
+      style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
+      onClick={onClose}
     >
-      <div className="bg-slate-800 rounded-t-2xl w-full max-w-md shadow-2xl animate-slideUp">
-        <div className="flex items-center justify-between p-4 border-b border-slate-700">
+      <div 
+        className="bg-slate-800 rounded-t-2xl w-full shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Handle bar for visual affordance */}
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="w-10 h-1 bg-slate-600 rounded-full" />
+        </div>
+        
+        <div className="flex items-center justify-between px-4 py-2 border-b border-slate-700">
           <h2 className="text-lg font-semibold text-white">Export</h2>
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-slate-700 rounded-lg transition-colors active:bg-slate-600"
+            className="p-3 -mr-2 hover:bg-slate-700 rounded-lg transition-colors active:bg-slate-600"
           >
-            <X className="w-5 h-5 text-slate-400" />
+            <X className="w-6 h-6 text-slate-400" />
           </button>
         </div>
         
-        <div className="p-4 space-y-2 pb-8">
+        <div className="p-4 space-y-2 pb-10">
           {options.map((option) => (
             <button
               key={option.id}

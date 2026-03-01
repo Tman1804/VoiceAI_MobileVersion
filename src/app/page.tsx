@@ -181,7 +181,7 @@ export default function Home() {
                     
                     {/* Pro Modes */}
                     {PRO_ENRICHMENT_MODES.map((mode) => {
-                      const isPro = usage?.is_pro;
+                      const isPro = usage?.plan === 'unlimited' || usage?.plan === 'pro';
                       return (
                         <button
                           key={mode}

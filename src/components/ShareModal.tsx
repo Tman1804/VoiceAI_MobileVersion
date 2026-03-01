@@ -225,10 +225,10 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 pb-safe"
       onClick={handleBackdropClick}
     >
-      <div className="bg-slate-800 rounded-2xl w-[90%] max-w-sm mx-4 shadow-2xl max-h-[80vh] overflow-hidden">
+      <div className="bg-slate-800 rounded-t-2xl w-full max-w-md shadow-2xl animate-slideUp">
         <div className="flex items-center justify-between p-4 border-b border-slate-700">
           <h2 className="text-lg font-semibold text-white">Export</h2>
           <button 
@@ -239,13 +239,13 @@ export function ShareModal({ isOpen, onClose, content, title = 'VoxWarp Export' 
           </button>
         </div>
         
-        <div className="p-4 space-y-2 overflow-y-auto">
+        <div className="p-4 space-y-2 pb-8">
           {options.map((option) => (
             <button
               key={option.id}
               onClick={option.onClick}
               disabled={isExporting}
-              className="w-full flex items-center gap-4 p-4 rounded-xl bg-slate-700/50 hover:bg-slate-700 active:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-700/50 hover:bg-slate-700 active:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <div className="w-10 h-10 rounded-full bg-primary-600/20 flex items-center justify-center flex-shrink-0">
                 {isExporting && exportingFormat === option.id ? (

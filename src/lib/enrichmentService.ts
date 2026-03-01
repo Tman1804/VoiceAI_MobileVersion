@@ -81,7 +81,6 @@ export function getEnrichmentModeLabel(mode: EnrichmentMode): string {
     'meeting-notes': 'Meeting Notes', 
     'clean-transcript': 'Clean Transcript', 
     'custom': 'Custom Prompt',
-    'blog-post': 'Blog Post',
     'email-draft': 'Email',
     'interview': 'Interview'
   };
@@ -95,7 +94,6 @@ export function getEnrichmentModeDescription(mode: EnrichmentMode): string {
     'meeting-notes': 'Format as meeting notes', 
     'clean-transcript': 'Clean up filler words', 
     'custom': 'Use your own prompt',
-    'blog-post': 'Transform into a blog article',
     'email-draft': 'Create a professional email',
     'interview': 'Extract insights & action items'
   };

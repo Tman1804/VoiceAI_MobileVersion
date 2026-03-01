@@ -76,7 +76,6 @@ serve(async (req) => {
       'action-items': 'Extrahiere alle Aufgaben und Action Items aus dem Text als Liste.',
       'meeting-notes': 'Formatiere den Text als strukturierte Meeting-Notizen mit Überschriften, Teilnehmern falls erwähnt, Agenda-Punkten und Entscheidungen.',
       // Pro-only modes
-      'blog-post': 'Wandle diesen Text in einen gut strukturierten Blog-Artikel um. Füge eine packende Einleitung, klare Zwischenüberschriften, gut lesbare Absätze und ein abschließendes Fazit hinzu. Der Stil soll informativ aber unterhaltsam sein.',
       'email-draft': 'Erstelle aus diesem Text eine professionelle E-Mail. Füge eine passende Betreffzeile, Anrede, klar strukturierten Hauptteil und professionellen Gruß hinzu. Halte den Ton geschäftlich aber freundlich.',
       'interview': `Extrahiere die Kernerkenntnisse aus diesem Interview. Strukturiere die Ausgabe wie folgt:
 
@@ -105,7 +104,7 @@ Passe die Struktur bei Bedarf an den Inhalt an. Lasse Abschnitte weg, wenn keine
     }
 
     // Check if mode is Pro-only
-    const proModes = ['action-items', 'blog-post', 'email-draft', 'interview']
+    const proModes = ['action-items', 'email-draft', 'interview']
     if (proModes.includes(mode) && currentUsage.plan !== 'unlimited') {
       throw new Error('Dieser Modus ist nur für Pro-Nutzer verfügbar.')
     }
